@@ -1,0 +1,13 @@
+version: '3.4'
+services:
+  minio:
+    image: 'bitnami/minio:latest'
+    container_name: minio
+    restart: always
+    logging:
+        options:
+            max-size: 1m
+    environment:
+        - MINIO_ROOT_USER=vitrapo
+        - MINIO_ROOT_PASSWORD=vitrapo123
+    network_mode: "host"

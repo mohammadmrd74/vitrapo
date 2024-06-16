@@ -1,0 +1,324 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ACDMessage {
+  id        Int       @id @default(autoincrement())
+  ACDId     Int
+  userId    Int
+  message   String?   @db.VarChar(200)
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model applicant {
+  id                        Int                         @id @default(autoincrement())
+  userId                    Int
+  nationalId                String?                     @db.Char(10)
+  DestCountryId             Int?
+  VisaType                  applicant_VisaType?
+  fieldOfStudy              String?                     @db.VarChar(100)
+  superVisorMobile          String?                     @db.VarChar(11)
+  studyLanguage             String?                     @db.Char(2)
+  fileNumber                String?                     @db.VarChar(100)
+  grade                     String?                     @db.VarChar(50)
+  telephone                 String?                     @db.VarChar(15)
+  state                     String?                     @db.VarChar(20)
+  city                      String?                     @db.VarChar(20)
+  passportNumber            String?                     @db.VarChar(15)
+  passportExpireDate        DateTime?                   @db.Timestamp(0)
+  passportIssueDate         DateTime?                   @db.Timestamp(0)
+  address                   String?                     @db.Text
+  gender                    applicant_gender?
+  createdAt                 DateTime                    @default(now()) @db.Timestamp(0)
+  updatedAt                 DateTime?                   @db.Timestamp(0)
+  users                     users                       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicant_FK")
+  applicantContractDocument applicantContractDocument[]
+  contracts                 contracts[]
+  installments              installments[]
+
+  @@index([userId], map: "applicant_FK")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model applicantContractDocument {
+  id          Int       @id @default(autoincrement())
+  applicantId Int
+  contractId  Int
+  documentId  Int
+  original    String?   @db.VarChar(100)
+  translate   String?   @db.VarChar(100)
+  createdAt   DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime? @db.Timestamp(0)
+  applicant   applicant @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK")
+  contracts   contracts @relation(fields: [contractId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK_1")
+  documents   documents @relation(fields: [documentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK_2")
+
+  @@unique([applicantId, contractId, documentId], map: "applicantContractDocument_UN")
+  @@index([contractId], map: "applicantContractDocument_FK_1")
+  @@index([documentId], map: "applicantContractDocument_FK_2")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model applicantInformation {
+  id              Int       @id @default(autoincrement())
+  applicantId     Int
+  contractId      String    @db.VarChar(100)
+  groupTitle      String?   @db.VarChar(100)
+  groupDecription String?   @db.VarChar(100)
+  fields          Json?
+  values          Json?
+  createdAt       DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime? @db.Timestamp(0)
+
+  @@unique([applicantId, contractId, groupTitle], map: "applicantInformation_UN")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model contracts {
+  id                        Int                         @id @default(autoincrement())
+  applicantId               Int
+  title                     String?                     @db.VarChar(100)
+  issueDate                 DateTime?                   @db.Timestamp(0)
+  executeDate               DateTime?                   @db.Timestamp(0)
+  image                     String?                     @db.VarChar(100)
+  status                    String?                     @db.VarChar(100)
+  totalPrice                Int?
+  istallmetNumbers          Int?                        @db.TinyInt
+  createdAt                 DateTime                    @default(now()) @db.Timestamp(0)
+  updatedAt                 DateTime?                   @db.Timestamp(0)
+  applicantContractDocument applicantContractDocument[]
+  applicant                 applicant                   @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "contracts_FK")
+  installments              installments[]
+
+  @@index([applicantId], map: "contracts_FK")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model countries {
+  id             Int       @id @default(autoincrement())
+  code           String?   @db.Char(2)
+  phoneCode      String?   @db.Char(6)
+  threeDigitCode String?   @db.Char(3)
+  extraDetails   Json?
+  map            Json?
+  createdAt      DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt      DateTime? @db.Timestamp(0)
+
+  @@index([code], map: "index2")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model countryTranslation {
+  id           Int       @id @default(autoincrement())
+  countryId    Int?
+  languageId   Int?
+  languageAbbr String?   @db.Char(2)
+  name         String?   @db.VarChar(45)
+  continent    String?   @db.VarChar(45)
+  createdAt    DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt    DateTime? @db.Timestamp(0)
+
+  @@unique([countryId, languageId], map: "index7")
+  @@index([countryId], map: "index2")
+  @@index([languageId], map: "index3")
+  @@index([name], map: "index4")
+  @@index([continent], map: "index5")
+  @@index([languageId, countryId], map: "index6")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model documents {
+  id                        Int                         @id @default(autoincrement())
+  docTitle                  String                      @unique(map: "documents_UN") @db.VarChar(100)
+  docDescription            String?                     @db.VarChar(200)
+  hasTranslate              Int                         @default(0) @db.TinyInt
+  groupName                 String?                     @db.VarChar(100)
+  createdAt                 DateTime                    @default(now()) @db.Timestamp(0)
+  updatedAt                 DateTime?                   @db.Timestamp(0)
+  applicantContractDocument applicantContractDocument[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model installmentMessages {
+  id            Int       @id @default(autoincrement())
+  installmentId Int
+  userId        Int
+  message       String?   @db.VarChar(300)
+  createdAt     DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime? @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model installments {
+  id                Int        @id @default(autoincrement())
+  title             String?    @db.VarChar(100)
+  contractId        Int
+  applicantId       Int?
+  installmentNumber Int        @default(1) @db.TinyInt
+  price             Decimal    @db.Decimal(14, 2)
+  priceCurrency     String     @db.Char(3)
+  dueDate           DateTime?  @db.Timestamp(0)
+  deadLine          Int?       @db.TinyInt
+  documentFile      String?    @db.VarChar(100)
+  isMain            Int?       @default(1) @db.TinyInt
+  status            Int?       @default(0) @db.TinyInt
+  createdAt         DateTime   @default(now()) @db.Timestamp(0)
+  updatedAt         DateTime?  @db.Timestamp(0)
+  contracts         contracts  @relation(fields: [contractId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installments_FK")
+  applicant         applicant? @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installments_FK_1")
+
+  @@unique([contractId, applicantId, installmentNumber, isMain], map: "installments_UN")
+  @@index([applicantId], map: "installments_FK_1")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model permissions {
+  id        Int                @id @default(autoincrement())
+  name      String             @db.VarChar(50)
+  path      String             @db.VarChar(50)
+  method    permissions_method
+  createdAt DateTime           @default(now()) @db.Timestamp(0)
+  updatedAt DateTime?          @db.Timestamp(0)
+
+  @@unique([method, path], map: "index2")
+  @@index([path, method], map: "index3")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model rolePermission_NN {
+  id           Int                      @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+  status       rolePermission_NN_status @default(enabled)
+  expiredAt    DateTime?                @db.Timestamp(0)
+  createdAt    DateTime                 @default(now()) @db.Timestamp(0)
+  updatedAt    DateTime?                @db.Timestamp(0)
+
+  @@unique([permissionId, roleId], map: "index2")
+  @@index([status, roleId], map: "index3")
+  @@index([permissionId, status], map: "index4")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model roles {
+  id        Int       @id @default(autoincrement())
+  title     String    @unique(map: "title_UNIQUE") @db.VarChar(45)
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @db.Timestamp(0)
+  users     users[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ticketActions {
+  id            Int       @id @default(autoincrement())
+  url           String    @db.VarChar(100)
+  requestFields Json?
+  createdAt     DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime? @db.Timestamp(0)
+}
+
+model ticketCategory {
+  id      Int       @id @default(autoincrement())
+  title   String    @unique(map: "ticketCategory_UN") @db.VarChar(100)
+  tickets tickets[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ticketCategoryActions_NN {
+  id         Int       @id @default(autoincrement())
+  categoryId Int
+  actionId   Int
+  createdAt  DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt  DateTime? @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ticketMasseges {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  ticketId  Int
+  message   String?   @db.VarChar(200)
+  isRead    Int?      @default(0) @db.TinyInt
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @db.Timestamp(0)
+  users     users     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ticketMasseges_FK")
+  tickets   tickets   @relation(fields: [ticketId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ticketMasseges_FK_1")
+
+  @@index([userId], map: "ticketMasseges_FK")
+  @@index([ticketId], map: "ticketMasseges_FK_1")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tickets {
+  id             Int              @id @default(autoincrement())
+  categoryId     Int
+  title          String?          @db.VarChar(100)
+  status         tickets_status   @default(created)
+  createdAt      DateTime         @default(now()) @db.Timestamp(0)
+  updatedAt      DateTime?        @db.Timestamp(0)
+  ticketMasseges ticketMasseges[]
+  ticketCategory ticketCategory   @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tickets_FK")
+
+  @@index([categoryId], map: "tickets_FK")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model users {
+  id             Int              @id @default(autoincrement())
+  username       String           @db.VarChar(100)
+  password       String           @db.VarChar(100)
+  smscode        String?          @db.Char(4)
+  mobile         String?          @unique(map: "users_UN") @db.VarChar(11)
+  email          String?          @unique(map: "users_email_UN") @db.VarChar(50)
+  roleId         Int?
+  name           String?          @db.VarChar(100)
+  family         String?          @db.VarChar(100)
+  profilePicture String?          @db.VarChar(100)
+  status         Int?             @default(1) @db.TinyInt
+  createdAt      DateTime         @default(now()) @db.Timestamp(0)
+  updatedAt      DateTime?        @db.Timestamp(0)
+  applicant      applicant[]
+  ticketMasseges ticketMasseges[]
+  roles          roles?           @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_FK")
+
+  @@index([roleId], map: "users_FK")
+}
+
+enum permissions_method {
+  GET
+  POST
+  PUT
+  DELETE
+}
+
+enum rolePermission_NN_status {
+  enabled
+  disabled
+}
+
+enum tickets_status {
+  created
+  replyed
+  closed
+  waiting
+}
+
+enum applicant_VisaType {
+  education
+  job
+  tourist
+}
+
+enum applicant_gender {
+  male
+  female
+  other
+}
