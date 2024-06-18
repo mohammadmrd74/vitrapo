@@ -33,6 +33,6 @@ export class UserController {
     )
     file: Express.Multer.File,
   ) {
-    return this.userService.uploadSingle(file, 'users');
+    return this.userService.registerUser(createUser, file, 'users');
   }
 }

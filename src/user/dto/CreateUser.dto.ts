@@ -3,12 +3,17 @@ import { MaxLength, IsString, Matches, IsOptional } from 'class-validator';
 export class CreateUserDto {
   @IsString()
   @MaxLength(11)
-  mobile: number;
+  mobile: string;
 
   @IsString()
   @MaxLength(50)
   @IsOptional()
-  email: number;
+  email: string;
+
+  @IsString()
+  @MaxLength(50)
+  @IsOptional()
+  username: string;
 
   @IsString()
   @MaxLength(20)
@@ -19,9 +24,9 @@ export class CreateUserDto {
 
   @IsString()
   @MaxLength(50)
-  name: number;
+  name: string;
 
   @IsString()
   @MaxLength(50)
-  family: number;
+  family: string;
 }
