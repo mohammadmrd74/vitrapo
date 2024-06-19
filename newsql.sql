@@ -423,7 +423,7 @@ CREATE TABLE `roles` (
   `updatedAt` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'زمان بروزرسانی',
   PRIMARY KEY (`id`),
   UNIQUE KEY `title_UNIQUE` (`title`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -432,6 +432,7 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
+INSERT INTO `roles` VALUES (1,'کاربر عادی','2024-06-18 13:39:00',NULL);
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -586,19 +587,21 @@ CREATE TABLE `users` (
   `smscode` char(4) DEFAULT NULL,
   `mobile` varchar(11) DEFAULT NULL,
   `email` varchar(50) DEFAULT NULL,
-  `roleId` int DEFAULT NULL,
+  `roleId` int DEFAULT '1',
   `name` varchar(100) DEFAULT NULL,
   `family` varchar(100) DEFAULT NULL,
   `profilePicture` varchar(100) DEFAULT NULL,
-  `status` tinyint DEFAULT '1',
+  `status` tinyint DEFAULT '0',
+  `smsTimeLeft` timestamp NULL DEFAULT NULL,
   `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'زمان ایجاد',
   `updatedAt` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'زمان بروزرسانی',
   PRIMARY KEY (`id`),
+  UNIQUE KEY `users_UN_username` (`username`),
   UNIQUE KEY `users_UN` (`mobile`),
   UNIQUE KEY `users_email_UN` (`email`),
   KEY `users_FK` (`roleId`),
   CONSTRAINT `users_FK` FOREIGN KEY (`roleId`) REFERENCES `roles` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -607,6 +610,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (28,'09361762073','$2b$10$cJowczIikcn2F08GOK8T1.Mz8zdLReeU2s0PG0pX8GZzOqrqg/Iti',NULL,'09361762073','3',1,'mohammad','moradi','localhost:9000/users/08eee24c62be9a33693b9d6bcad84832.png',1,NULL,'2024-06-18 10:34:26',NULL),(30,'09361762074','$2b$10$grrkJPX6lvYHrh.X6XLbN.eC11OMYY/MyaJlY.9w3z890PFPBRccq',NULL,'09361762074',NULL,1,'mohammad','moradi','localhost:9000/users/ec62216b67ddc63d17b53177850d97da.png',1,NULL,'2024-06-18 10:34:47',NULL),(31,'09361762072','$2b$10$iys748s4s8FdhxjMoP01feF6M7F2U.uIZf.Nfg4xNhmQHFvkUJhKe','9172','09361762072',NULL,1,'mohammad','moradi','localhost:9000/users/3a0deb91bd08a8365a6e27dbefa7c94a.png',1,'2024-06-19 10:18:51','2024-06-18 10:34:58','2024-06-19 13:48:50');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -667,4 +671,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-06-16 10:24:18
+-- Dump completed on 2024-06-19 17:21:58

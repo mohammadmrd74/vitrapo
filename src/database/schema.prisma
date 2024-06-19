@@ -273,16 +273,17 @@ model tickets {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model users {
   id             Int              @id @default(autoincrement())
-  username       String           @db.VarChar(100)
+  username       String           @unique(map: "users_UN_username") @db.VarChar(100)
   password       String           @db.VarChar(100)
   smscode        String?          @db.Char(4)
   mobile         String?          @unique(map: "users_UN") @db.VarChar(11)
   email          String?          @unique(map: "users_email_UN") @db.VarChar(50)
-  roleId         Int?
+  roleId         Int?             @default(1)
   name           String?          @db.VarChar(100)
   family         String?          @db.VarChar(100)
   profilePicture String?          @db.VarChar(100)
   status         Int?             @default(1) @db.TinyInt
+  smsTimeLeft    DateTime?        @db.Timestamp(0)
   createdAt      DateTime         @default(now()) @db.Timestamp(0)
   updatedAt      DateTime?        @db.Timestamp(0)
   applicant      applicant[]

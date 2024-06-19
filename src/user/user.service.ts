@@ -1,14 +1,21 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { MinioClientService } from 'src/minio-client/minio-client.service';
-import { CreateUserDto } from './dto/CreateUser.dto';
+import { ApproveUserDto, CreateUserDto, LoginUserDto } from './dto/user.dto';
 import { PrismaService } from 'src/database/prisma.service';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
+type selectedUser = {
+  id: number;
+  password: string;
+  smsTimeLeft: Date;
+};
 @Injectable()
 export class UserService {
   constructor(
     private minioClientService: MinioClientService,
     private prismaService: PrismaService,
+    private jwtService: JwtService,
   ) {}
 
   async registerUser(
@@ -29,12 +36,9 @@ export class UserService {
       });
 
       return {
-        statusCode: 200,
-        message: {
-          id: user.id,
-          username: user.username,
-          profilePicture: user.profilePicture,
-        },
+        id: user.id,
+        username: user.username,
+        profilePicture: user.profilePicture,
       };
     } catch (error) {
       if (error.code === 'P2002') {
@@ -50,5 +54,114 @@ export class UserService {
     const uploaded_image = await this.minioClientService.upload(image, bucket);
 
     return uploaded_image.url;
+  }
+
+  async loginUser(loginUser: LoginUserDto) {
+    const foundUser = await this.prismaService.users.findFirst({
+      select: {
+        id: true,
+        password: true,
+        smsTimeLeft: true,
+      },
+      where: {
+        username: loginUser.username,
+      },
+    });
+
+    //check user exists
+    if (!foundUser)
+      throw new HttpException('Username not found', HttpStatus.NOT_FOUND);
+
+    //check password correct
+    const isMatch = await bcrypt.compare(
+      loginUser.password,
+      foundUser.password,
+    );
+
+    if (!isMatch)
+      throw new HttpException('Incorrect password', HttpStatus.FORBIDDEN);
+
+    //if nothing found or time passed 2 minutes
+    if (
+      !foundUser.smsTimeLeft ||
+      new Date().getTime() - new Date(foundUser.smsTimeLeft).getTime() > 120000
+    ) {
+      const updateUser = await this.updateUserWithSMScode(foundUser);
+
+      return {
+        timeLeft:
+          120 -
+          Math.ceil(
+            (new Date().getTime() -
+              new Date(updateUser.smsTimeLeft).getTime()) /
+              1000,
+          ),
+      };
+    }
+
+    return {
+      timeLeft:
+        120 -
+        Math.ceil(
+          (new Date().getTime() - new Date(foundUser.smsTimeLeft).getTime()) /
+            1000,
+        ),
+    };
+  }
+
+  async updateUserWithSMScode(foundUser: selectedUser) {
+    const code = Math.floor(Math.random() * 9000) + 1000;
+    const date = new Date();
+    const updateUser = await this.prismaService.users.update({
+      where: {
+        id: foundUser.id,
+      },
+      data: {
+        smscode: code.toString(),
+        smsTimeLeft: date,
+      },
+    });
+
+    return updateUser;
+  }
+
+  async approveUser(approveUser: ApproveUserDto) {
+    const foundUser = await this.prismaService.users.findFirst({
+      select: {
+        id: true,
+        smsTimeLeft: true,
+        mobile: true,
+        email: true,
+        username: true,
+      },
+      where: {
+        username: approveUser.username,
+        smscode: approveUser.code,
+      },
+    });
+
+    //check user exists
+
+    if (!foundUser)
+      throw new HttpException('Invalid code', HttpStatus.FORBIDDEN);
+
+    if (
+      new Date().getTime() - new Date(foundUser.smsTimeLeft).getTime() >
+      120000
+    )
+      throw new HttpException('Code expired', HttpStatus.FORBIDDEN);
+
+    const payload = {
+      sub: foundUser.id,
+      username: foundUser.username,
+      mobile: foundUser.mobile,
+      email: foundUser.email,
+    };
+
+    await this.jwtService.signAsync(payload);
+
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
   }
 }
