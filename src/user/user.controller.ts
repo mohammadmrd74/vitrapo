@@ -55,4 +55,10 @@ export class UserController {
   getProfile(@Request() req) {
     return req.user;
   }
+
+  @UseGuards(AuthGuard)
+  @Get('list')
+  getUsersList(@Request() req) {
+    return req.user;
+  }
 }

@@ -132,6 +132,7 @@ export class UserService {
         smsTimeLeft: true,
         mobile: true,
         email: true,
+        roleId: true,
         username: true,
       },
       where: {
@@ -156,9 +157,8 @@ export class UserService {
       username: foundUser.username,
       mobile: foundUser.mobile,
       email: foundUser.email,
+      roleId: foundUser.roleId
     };
-
-    await this.jwtService.signAsync(payload);
 
     return {
       access_token: await this.jwtService.signAsync(payload),
