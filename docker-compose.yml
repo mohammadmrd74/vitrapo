@@ -1,5 +1,12 @@
 version: '3.4'
 services:
+  nestapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vitrapo-app 
+    restart: always
+    network_mode: "host"
   minio:
     image: 'bitnami/minio:latest'
     container_name: minio
