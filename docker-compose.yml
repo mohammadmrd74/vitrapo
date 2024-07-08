@@ -18,3 +18,12 @@ services:
         - MINIO_ROOT_USER=vitrapo
         - MINIO_ROOT_PASSWORD=vitrapo123
     network_mode: "host"
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: always
+    network_mode: "host"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
