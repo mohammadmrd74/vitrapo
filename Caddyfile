@@ -1,4 +1,4 @@
-vitrapo.work.gd {
+http://vitrapo.work.gd {
     handle /api/* {
         reverse_proxy localhost:4000
     }
