@@ -18,5 +18,7 @@ COPY . .
 # Creates a "dist" folder with the production build
 RUN yarn build
 
+RUN npx prisma generate
+
 # Start the server using the production build
 CMD [ "node", "dist/main.js" ]
