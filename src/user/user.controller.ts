@@ -14,7 +14,8 @@ import {
 import { UserService } from './user.service';
 import { ApproveUserDto, CreateUserDto, LoginUserDto } from './dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthenticationGuard } from 'src/auth/authentication.guard';
+import { AuthorizationGuard } from 'src/auth/authorization.guard';
 
 @Controller('user')
 export class UserController {
@@ -50,15 +51,21 @@ export class UserController {
     return this.userService.approveUser(approveUser);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthenticationGuard)
   @Get('profile')
   getProfile(@Request() req) {
     return req.user;
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
   @Get('list')
-  getUsersList(@Request() req) {
-    return req.user;
+  getUsersList() {
+    return this.userService.getUserList();
   }
+  // 💡 We're assigning the payload to the request object here
+  // so that we can access it in our route handlers
+
+  // const canAccess = await this.prismaService
+  //   .$queryRaw`call canAccess(${request.url}, ${request.method}, ${payload.sub})`;
+
 }

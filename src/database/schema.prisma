@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -181,12 +182,13 @@ model installments {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model permissions {
-  id        Int                @id @default(autoincrement())
-  name      String             @db.VarChar(50)
-  path      String             @db.VarChar(50)
-  method    permissions_method
-  createdAt DateTime           @default(now()) @db.Timestamp(0)
-  updatedAt DateTime?          @db.Timestamp(0)
+  id                Int                 @id @default(autoincrement())
+  name              String              @db.VarChar(50)
+  path              String              @db.VarChar(50)
+  method            permissions_method
+  createdAt         DateTime            @default(now()) @db.Timestamp(0)
+  updatedAt         DateTime?           @db.Timestamp(0)
+  rolePermission_NN rolePermission_NN[]
 
   @@unique([method, path], map: "index2")
   @@index([path, method], map: "index3")
@@ -201,19 +203,23 @@ model rolePermission_NN {
   expiredAt    DateTime?                @db.Timestamp(0)
   createdAt    DateTime                 @default(now()) @db.Timestamp(0)
   updatedAt    DateTime?                @db.Timestamp(0)
+  permissions  permissions              @relation(fields: [permissionId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "rolePermission_NN_FK")
+  roles        roles                    @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "rolePermission_NN_FK_1")
 
   @@unique([permissionId, roleId], map: "index2")
   @@index([status, roleId], map: "index3")
   @@index([permissionId, status], map: "index4")
+  @@index([roleId], map: "rolePermission_NN_FK_1")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model roles {
-  id        Int       @id @default(autoincrement())
-  title     String    @unique(map: "title_UNIQUE") @db.VarChar(45)
-  createdAt DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt DateTime? @db.Timestamp(0)
-  users     users[]
+  id                Int                 @id @default(autoincrement())
+  title             String              @unique(map: "title_UNIQUE") @db.VarChar(45)
+  createdAt         DateTime            @default(now()) @db.Timestamp(0)
+  updatedAt         DateTime?           @db.Timestamp(0)
+  rolePermission_NN rolePermission_NN[]
+  users             users[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -282,7 +288,7 @@ model users {
   name           String?          @db.VarChar(100)
   family         String?          @db.VarChar(100)
   profilePicture String?          @db.VarChar(100)
-  status         Int?             @default(1) @db.TinyInt
+  status         Int?             @default(0) @db.TinyInt
   smsTimeLeft    DateTime?        @db.Timestamp(0)
   createdAt      DateTime         @default(now()) @db.Timestamp(0)
   updatedAt      DateTime?        @db.Timestamp(0)

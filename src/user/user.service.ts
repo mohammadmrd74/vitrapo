@@ -4,12 +4,14 @@ import { ApproveUserDto, CreateUserDto, LoginUserDto } from './dto/user.dto';
 import { PrismaService } from 'src/database/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { users } from '@prisma/client';
 
 type selectedUser = {
   id: number;
   password: string;
   smsTimeLeft: Date;
 };
+type Without<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 @Injectable()
 export class UserService {
   constructor(
@@ -117,7 +119,8 @@ export class UserService {
         id: foundUser.id,
       },
       data: {
-        smscode: code.toString(),
+        // smscode: code.toString(),
+        smscode: '1111',
         smsTimeLeft: date,
       },
     });
@@ -137,7 +140,8 @@ export class UserService {
       },
       where: {
         username: approveUser.username,
-        smscode: approveUser.code,
+        smscode: '1111',
+        // smscode: approveUser.code,
       },
     });
 
@@ -157,11 +161,28 @@ export class UserService {
       username: foundUser.username,
       mobile: foundUser.mobile,
       email: foundUser.email,
-      roleId: foundUser.roleId
+      roleId: foundUser.roleId,
     };
 
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
+  }
+
+  exclude<T, K extends keyof users>(users: T[], keys: K[]) {
+    const result = users.map((user) =>
+      Object.fromEntries(
+        Object.entries(user).filter(([key]) => !keys.includes(key as K)),
+      ),
+    );
+
+    return result;
+  }
+
+  async getUserList() {
+    const users = await this.prismaService.users.findMany();
+    const userWithoutPassword = this.exclude(users, ['password']);
+
+    return userWithoutPassword;
   }
 }
