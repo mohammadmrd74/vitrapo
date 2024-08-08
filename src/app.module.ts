@@ -13,7 +13,7 @@ import { ApplicantModule } from './applicant/applicant.module';
     }),
     PrismaModule,
     UserModule,
-    ApplicantModule
+    ApplicantModule,
   ],
   controllers: [],
   providers: [],

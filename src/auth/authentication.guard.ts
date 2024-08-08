@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { Timestamp } from 'rxjs';
 import { PrismaService } from 'src/database/prisma.service';
 import { jwtConstants } from 'src/user/constants';
 
