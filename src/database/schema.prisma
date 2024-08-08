@@ -23,8 +23,8 @@ model applicant {
   id                        Int                         @id @default(autoincrement())
   userId                    Int
   nationalId                String?                     @db.Char(10)
-  DestCountryId             Int?
-  VisaType                  applicant_VisaType?
+  destCountryId             Int?
+  visaType                  applicant_visaType?
   fieldOfStudy              String?                     @db.VarChar(100)
   superVisorMobile          String?                     @db.VarChar(11)
   studyLanguage             String?                     @db.Char(2)
@@ -45,6 +45,7 @@ model applicant {
   contracts                 contracts[]
   installments              installments[]
 
+  @@unique([userId, destCountryId, visaType], map: "applicant_UN")
   @@index([userId], map: "applicant_FK")
 }
 
@@ -318,14 +319,14 @@ enum tickets_status {
   waiting
 }
 
-enum applicant_VisaType {
-  education
-  job
-  tourist
-}
-
 enum applicant_gender {
   male
   female
   other
+}
+
+enum applicant_visaType {
+  education
+  job
+  tourist
 }

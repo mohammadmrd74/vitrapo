@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import appConfig from 'src/common/config/appConfiguration';
 import databaseConfig from 'src/common/config/databaseConfiguration';
 import { UserModule } from './user/user.module';
+import { ApplicantModule } from './applicant/applicant.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -12,6 +13,7 @@ import { UserModule } from './user/user.module';
     }),
     PrismaModule,
     UserModule,
+    ApplicantModule
   ],
   controllers: [],
   providers: [],

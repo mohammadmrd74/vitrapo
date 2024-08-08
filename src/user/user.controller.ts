@@ -53,7 +53,7 @@ export class UserController {
 
   @UseGuards(AuthenticationGuard)
   @Get('profile')
-  getProfile(@Request() req) {
+  getProfile(@Request() req: Request & { user: object }) {
     return req.user;
   }
 
@@ -62,10 +62,4 @@ export class UserController {
   getUsersList() {
     return this.userService.getUserList();
   }
-  // 💡 We're assigning the payload to the request object here
-  // so that we can access it in our route handlers
-
-  // const canAccess = await this.prismaService
-  //   .$queryRaw`call canAccess(${request.url}, ${request.method}, ${payload.sub})`;
-
 }

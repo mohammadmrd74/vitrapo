@@ -6,8 +6,19 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { Timestamp } from 'rxjs';
 import { PrismaService } from 'src/database/prisma.service';
 import { jwtConstants } from 'src/user/constants';
+
+export interface vtUser {
+  sub: number;
+  username: string;
+  mobile: string;
+  email: string;
+  roleId: number;
+  iat: Date;
+  exp: Date;
+}
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
@@ -23,7 +34,7 @@ export class AuthenticationGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
+      const payload: vtUser = await this.jwtService.verifyAsync(token, {
         secret: jwtConstants.secret,
       });
       request['user'] = payload;
