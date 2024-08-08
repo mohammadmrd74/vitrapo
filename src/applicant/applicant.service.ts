@@ -1,15 +1,33 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
-import { CreateApplicantDto } from './dto/applicant.dto';
+import {
+  CreateApplicantDataGroupDto,
+  CreateApplicantDto,
+} from './dto/applicant.dto';
 import { vtUser } from 'src/auth/authentication.guard';
+import { dbError } from 'src/common/dbError';
 
 @Injectable()
 export class ApplicantService {
+  async insertApplicantDataGroup(
+    applicantDataGroup: CreateApplicantDataGroupDto,
+  ) {
+    try {
+      const createGroup = await this.prismaService.applicantDataGroup.create({
+        data: applicantDataGroup,
+      });
+
+      return {
+        id: createGroup.id,
+      };
+    } catch (error) {
+      console.log(error);
+
+      dbError(error);
+
+      throw new NotFoundException();
+    }
+  }
   constructor(private prismaService: PrismaService) {}
 
   async addApplicant(applicant: CreateApplicantDto) {
@@ -28,12 +46,8 @@ export class ApplicantService {
       };
     } catch (error) {
       console.log(error);
-      if (error.code === 'P2002') {
-        throw new HttpException(
-          'applicant with this country and visa type already exists',
-          HttpStatus.BAD_REQUEST,
-        );
-      } else throw new NotFoundException();
+      dbError(error);
+      throw new NotFoundException();
     }
   }
 

@@ -42,6 +42,7 @@ model applicant {
   updatedAt                 DateTime?                   @db.Timestamp(0)
   users                     users                       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicant_FK")
   applicantContractDocument applicantContractDocument[]
+  applicantInformation      applicantInformation[]
   contracts                 contracts[]
   installments              installments[]
 
@@ -70,17 +71,21 @@ model applicantContractDocument {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model applicantInformation {
-  id              Int       @id @default(autoincrement())
-  applicantId     Int
-  contractId      String    @db.VarChar(100)
-  groupTitle      String?   @db.VarChar(100)
-  groupDecription String?   @db.VarChar(100)
-  fields          Json?
-  values          Json?
-  createdAt       DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt       DateTime? @db.Timestamp(0)
+  id                 Int                 @id @default(autoincrement())
+  applicantId        Int
+  contractId         Int
+  dataGroupId        Int?
+  fields             Json?
+  values             Json?
+  createdAt          DateTime            @default(now()) @db.Timestamp(0)
+  updatedAt          DateTime?           @db.Timestamp(0)
+  contracts          contracts           @relation(fields: [contractId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantInformation_FK_1")
+  applicant          applicant           @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantInformation_FK")
+  applicantDataGroup applicantDataGroup? @relation(fields: [dataGroupId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantInformation_FK_2")
 
-  @@unique([applicantId, contractId, groupTitle], map: "applicantInformation_UN")
+  @@unique([applicantId, contractId, dataGroupId], map: "applicantInformation_UN")
+  @@index([contractId], map: "applicantInformation_FK")
+  @@index([dataGroupId], map: "applicantInformation_FK_2")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -97,6 +102,7 @@ model contracts {
   createdAt                 DateTime                    @default(now()) @db.Timestamp(0)
   updatedAt                 DateTime?                   @db.Timestamp(0)
   applicantContractDocument applicantContractDocument[]
+  applicantInformation      applicantInformation[]
   applicant                 applicant                   @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "contracts_FK")
   installments              installments[]
 
@@ -298,6 +304,16 @@ model users {
   roles          roles?           @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_FK")
 
   @@index([roleId], map: "users_FK")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model applicantDataGroup {
+  id                   Int                    @id @default(autoincrement())
+  title                String?                @db.VarChar(100)
+  description          String?                @db.VarChar(200)
+  createdAt            DateTime               @default(now()) @db.Timestamp(0)
+  updatedAt            DateTime?              @db.Timestamp(0)
+  applicantInformation applicantInformation[]
 }
 
 enum permissions_method {

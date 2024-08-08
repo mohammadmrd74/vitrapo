@@ -2,11 +2,10 @@ import {
   MaxLength,
   IsString,
   MinLength,
-  Length,
   IsNumber,
   IsEnum,
-  IsDate,
   IsDateString,
+  IsObject,
 } from 'class-validator';
 
 enum visaTypes {
@@ -21,12 +20,13 @@ enum gender {
 }
 
 export class CreateApplicantDto {
-  @IsString()
-  @Length(10, 10)
-  nationalId: string;
-
   @IsNumber()
   userId: number;
+
+  @IsString()
+  @MaxLength(10)
+  @MinLength(10)
+  nationalId: string;
 
   @IsNumber()
   destCountryId: number;
@@ -76,4 +76,29 @@ export class CreateApplicantDto {
 
   @IsEnum(gender)
   gender: gender;
+}
+
+export class CreateApplicantInformationDto {
+  @IsNumber()
+  applicantId: number;
+
+  @IsNumber()
+  contractId: number;
+
+  @IsNumber()
+  dataGroupId: string;
+
+  @IsObject()
+  fields: object;
+
+  @IsObject()
+  values: object;
+}
+
+export class CreateApplicantDataGroupDto {
+  @IsString()
+  title: string;
+
+  @IsString()
+  description: string;
 }

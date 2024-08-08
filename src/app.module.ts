@@ -5,6 +5,7 @@ import appConfig from 'src/common/config/appConfiguration';
 import databaseConfig from 'src/common/config/databaseConfiguration';
 import { UserModule } from './user/user.module';
 import { ApplicantModule } from './applicant/applicant.module';
+import { ContractModule } from './contract/contract.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -14,6 +15,7 @@ import { ApplicantModule } from './applicant/applicant.module';
     PrismaModule,
     UserModule,
     ApplicantModule,
+    ContractModule,
   ],
   controllers: [],
   providers: [],
