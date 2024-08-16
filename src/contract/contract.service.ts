@@ -1,9 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateContractDto } from './dto/createContract.dto';
 import { MinioClientService } from 'src/minio-client/minio-client.service';
 import { PrismaService } from 'src/database/prisma.service';
 import { dbError } from 'src/common/dbError';
 import { vtUser } from 'src/auth/authentication.guard';
+import {
+  CreateContractInstallmentDto,
+  CreateContractInstallmentFileDto,
+  CreateInstallmentMessageDto,
+} from './dto/createContractInstallment.dto';
 
 @Injectable()
 export class ContractService {
@@ -12,8 +22,6 @@ export class ContractService {
     private prismaService: PrismaService,
   ) {}
   async getContract(applicantId: number, user: vtUser) {
-    console.log(applicantId);
-
     try {
       const contract = await this.prismaService.contracts.findMany({
         where: {
@@ -57,6 +65,131 @@ export class ContractService {
       dbError(error);
 
       throw error;
+    }
+  }
+
+  async insertContractInstallment(
+    createContractInstallment: CreateContractInstallmentDto,
+  ) {
+    const contract = await this.prismaService.contracts.findUnique({
+      where: { id: createContractInstallment.contractId },
+      select: { applicantId: true },
+    });
+
+    if (contract) {
+      try {
+        const createdContract = await this.prismaService.installments.create({
+          data: {
+            ...createContractInstallment,
+            applicantId: contract.applicantId,
+            dueDate: new Date(createContractInstallment.dueDate),
+          },
+        });
+
+        return createdContract;
+      } catch (error) {
+        console.log(error);
+        dbError(error);
+
+        throw error;
+      }
+    } else {
+      throw new HttpException(`applicant doesn't exist.`, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async getContractInstallments(
+    applicantId: number,
+    contractId: number,
+    user: vtUser,
+  ) {
+    try {
+      const installments = await this.prismaService.installments.findMany({
+        where: {
+          applicantId: applicantId,
+          contractId: contractId,
+          applicant: {
+            userId: user.sub,
+          },
+        },
+      });
+
+      return installments;
+    } catch (error) {
+      console.log(error);
+
+      throw new NotFoundException();
+    }
+  }
+
+  async insertInstallmentFile(
+    installment: CreateContractInstallmentFileDto,
+    file: Express.Multer.File,
+  ) {
+    try {
+      const uploaded_image = await this.minioClientService.upload(
+        file,
+        'installments',
+      );
+      const updatedInstallment = await this.prismaService.installments.update({
+        where: {
+          id: parseInt(installment.installmentId, 10),
+        },
+        data: {
+          documentFile: uploaded_image.url,
+        },
+      });
+
+      return updatedInstallment;
+    } catch (error) {
+      console.log(error);
+      dbError(error);
+
+      throw error;
+    }
+  }
+
+  async insertInstallmentMessage(
+    createInstallmentMessage: CreateInstallmentMessageDto,
+    user: vtUser,
+  ) {
+    try {
+      const createdContract =
+        await this.prismaService.installmentMessages.create({
+          data: {
+            ...createInstallmentMessage,
+            userId: user.sub,
+          },
+        });
+
+      return createdContract;
+    } catch (error) {
+      console.log(error);
+      dbError(error);
+
+      throw error;
+    }
+  }
+
+  async getInstallmentMessage(installmentId: number, user: vtUser) {
+    try {
+      const installmentsMessages =
+        await this.prismaService.installmentMessages.findMany({
+          where: {
+            installmentId: installmentId,
+            installments: {
+              applicant: {
+                userId: user.sub,
+              },
+            },
+          },
+        });
+
+      return installmentsMessages;
+    } catch (error) {
+      console.log(error);
+
+      throw new NotFoundException();
     }
   }
 }

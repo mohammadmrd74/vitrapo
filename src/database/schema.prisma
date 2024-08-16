@@ -158,32 +158,36 @@ model documents {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model installmentMessages {
-  id            Int       @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   installmentId Int
   userId        Int
-  message       String?   @db.VarChar(300)
-  createdAt     DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt     DateTime? @db.Timestamp(0)
+  message       String?      @db.VarChar(300)
+  createdAt     DateTime     @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime?    @db.Timestamp(0)
+  installments  installments @relation(fields: [installmentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installmentMessages_FK")
+
+  @@index([installmentId], map: "installmentMessages_FK")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model installments {
-  id                Int        @id @default(autoincrement())
-  title             String?    @db.VarChar(100)
-  contractId        Int
-  applicantId       Int?
-  installmentNumber Int        @default(1) @db.TinyInt
-  price             Decimal    @db.Decimal(14, 2)
-  priceCurrency     String     @db.Char(3)
-  dueDate           DateTime?  @db.Timestamp(0)
-  deadLine          Int?       @db.TinyInt
-  documentFile      String?    @db.VarChar(100)
-  isMain            Int?       @default(1) @db.TinyInt
-  status            Int?       @default(0) @db.TinyInt
-  createdAt         DateTime   @default(now()) @db.Timestamp(0)
-  updatedAt         DateTime?  @db.Timestamp(0)
-  contracts         contracts  @relation(fields: [contractId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installments_FK")
-  applicant         applicant? @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installments_FK_1")
+  id                  Int                   @id @default(autoincrement())
+  title               String?               @db.VarChar(100)
+  contractId          Int
+  applicantId         Int
+  installmentNumber   Int                   @default(1) @db.TinyInt
+  price               Decimal               @db.Decimal(14, 2)
+  priceCurrency       String                @db.Char(3)
+  dueDate             DateTime?             @db.Timestamp(0)
+  deadLine            Int?                  @db.TinyInt
+  documentFile        String?               @db.VarChar(100)
+  isMain              Int?                  @default(1) @db.TinyInt
+  status              Int?                  @default(0) @db.TinyInt
+  createdAt           DateTime              @default(now()) @db.Timestamp(0)
+  updatedAt           DateTime?             @db.Timestamp(0)
+  installmentMessages installmentMessages[]
+  contracts           contracts             @relation(fields: [contractId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installments_FK")
+  applicant           applicant             @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installments_FK_1")
 
   @@unique([contractId, applicantId, installmentNumber, isMain], map: "installments_UN")
   @@index([applicantId], map: "installments_FK_1")

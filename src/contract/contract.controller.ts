@@ -11,13 +11,19 @@ import {
   Query,
   Get,
   ParseIntPipe,
-  Request
+  Request,
+  Put,
 } from '@nestjs/common';
 import { ContractService } from './contract.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateContractDto } from './dto/createContract.dto';
 import { AuthenticationGuard, vtUser } from 'src/auth/authentication.guard';
 import { AuthorizationGuard } from 'src/auth/authorization.guard';
+import {
+  CreateContractInstallmentDto,
+  CreateContractInstallmentFileDto,
+  CreateInstallmentMessageDto,
+} from './dto/createContractInstallment.dto';
 
 @Controller('contract')
 export class ContractController {
@@ -26,7 +32,7 @@ export class ContractController {
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  isertContract(
+  insertContract(
     @Body() createContract: CreateContractDto,
     @UploadedFile(
       new ParseFilePipe({
@@ -55,5 +61,50 @@ export class ContractController {
     @Request() req: Request & { user: vtUser },
   ) {
     return this.contractService.getContract(applicantId, req.user);
+  }
+
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Post('/installment')
+  insertContractInstallment(
+    @Body() createContractInstallment: CreateContractInstallmentDto,
+  ) {
+    return this.contractService.insertContractInstallment(
+      createContractInstallment,
+    );
+  }
+
+  @UseGuards(AuthenticationGuard)
+  @Get('/installment')
+  getContractInstallment(
+    @Query('applicantId', ParseIntPipe) applicantId: number,
+    @Query('contractId', ParseIntPipe) contractId: number,
+    @Request() req: Request & { user: vtUser },
+  ) {
+    return this.contractService.getContractInstallments(
+      applicantId,
+      contractId,
+      req.user,
+    );
+  }
+
+  @UseGuards(AuthenticationGuard)
+  @Post('/installment/message')
+  insertInstallmentMessage(
+    @Body() installmentMessage: CreateInstallmentMessageDto,
+    @Request() req: Request & { user: vtUser },
+  ) {
+    return this.contractService.insertInstallmentMessage(
+      installmentMessage,
+      req.user,
+    );
+  }
+
+  @UseGuards(AuthenticationGuard)
+  @Get('/installment/message')
+  getInstallmentMessage(
+    @Query('installmentId', ParseIntPipe) installmentId: number,
+    @Request() req: Request & { user: vtUser },
+  ) {
+    return this.contractService.getInstallmentMessage(installmentId, req.user);
   }
 }
