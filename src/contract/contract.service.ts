@@ -7,6 +7,10 @@ import { vtUser } from 'src/auth/authentication.guard';
 
 @Injectable()
 export class ContractService {
+  constructor(
+    private minioClientService: MinioClientService,
+    private prismaService: PrismaService,
+  ) {}
   async getContract(applicantId: number, user: vtUser) {
     console.log(applicantId);
 
@@ -27,10 +31,6 @@ export class ContractService {
       throw new NotFoundException();
     }
   }
-  constructor(
-    private minioClientService: MinioClientService,
-    private prismaService: PrismaService,
-  ) {}
 
   async insertContract(
     createContract: CreateContractDto,

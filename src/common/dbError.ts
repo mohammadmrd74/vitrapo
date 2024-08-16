@@ -10,7 +10,10 @@ export function dbError(error) {
       );
       break;
     case 'P2003':
-      throw new HttpException('object not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        `${error?.meta?.field_name} doesn't exist.`,
+        HttpStatus.NOT_FOUND,
+      );
       break;
 
     default:

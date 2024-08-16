@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsDateString,
   IsObject,
+  IsArray,
 } from 'class-validator';
 
 enum visaTypes {
@@ -18,6 +19,13 @@ enum gender {
   male = 'male',
   female = 'female',
 }
+
+type field = {
+  type: string;
+  key: string;
+  label: string;
+  validations: object;
+};
 
 export class CreateApplicantDto {
   @IsNumber()
@@ -86,10 +94,7 @@ export class CreateApplicantInformationDto {
   contractId: number;
 
   @IsNumber()
-  dataGroupId: string;
-
-  @IsObject()
-  fields: object;
+  dataGroupId: number;
 
   @IsObject()
   values: object;
@@ -101,4 +106,7 @@ export class CreateApplicantDataGroupDto {
 
   @IsString()
   description: string;
+
+  @IsArray()
+  fields: field[];
 }

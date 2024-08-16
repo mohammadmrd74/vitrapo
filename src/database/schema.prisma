@@ -52,17 +52,18 @@ model applicant {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model applicantContractDocument {
-  id          Int       @id @default(autoincrement())
-  applicantId Int
-  contractId  Int
-  documentId  Int
-  original    String?   @db.VarChar(100)
-  translate   String?   @db.VarChar(100)
-  createdAt   DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt   DateTime? @db.Timestamp(0)
-  applicant   applicant @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK")
-  contracts   contracts @relation(fields: [contractId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK_1")
-  documents   documents @relation(fields: [documentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK_2")
+  id            Int       @id @default(autoincrement())
+  applicantId   Int
+  contractId    Int
+  documentId    Int
+  original      String?   @db.VarChar(100)
+  translate     String?   @db.VarChar(100)
+  wantTranslate Int?      @default(0) @db.TinyInt
+  createdAt     DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime? @db.Timestamp(0)
+  applicant     applicant @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK")
+  contracts     contracts @relation(fields: [contractId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK_1")
+  documents     documents @relation(fields: [documentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK_2")
 
   @@unique([applicantId, contractId, documentId], map: "applicantContractDocument_UN")
   @@index([contractId], map: "applicantContractDocument_FK_1")
@@ -75,7 +76,6 @@ model applicantInformation {
   applicantId        Int
   contractId         Int
   dataGroupId        Int?
-  fields             Json?
   values             Json?
   createdAt          DateTime            @default(now()) @db.Timestamp(0)
   updatedAt          DateTime?           @db.Timestamp(0)
@@ -93,12 +93,14 @@ model contracts {
   id                        Int                         @id @default(autoincrement())
   applicantId               Int
   title                     String?                     @db.VarChar(100)
+  description               String?                     @db.VarChar(200)
   issueDate                 DateTime?                   @db.Timestamp(0)
   executeDate               DateTime?                   @db.Timestamp(0)
   image                     String?                     @db.VarChar(100)
   status                    String?                     @db.VarChar(100)
   totalPrice                Int?
   istallmetNumbers          Int?                        @db.TinyInt
+  isMain                    Int                         @default(1) @db.TinyInt
   createdAt                 DateTime                    @default(now()) @db.Timestamp(0)
   updatedAt                 DateTime?                   @db.Timestamp(0)
   applicantContractDocument applicantContractDocument[]
@@ -311,9 +313,20 @@ model applicantDataGroup {
   id                   Int                    @id @default(autoincrement())
   title                String?                @db.VarChar(100)
   description          String?                @db.VarChar(200)
+  fields               Json?
   createdAt            DateTime               @default(now()) @db.Timestamp(0)
   updatedAt            DateTime?              @db.Timestamp(0)
   applicantInformation applicantInformation[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model applicantContractDocumentMessage {
+  id        Int       @id @default(autoincrement())
+  ACDId     Int
+  userId    Int
+  message   String?   @db.VarChar(200)
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @db.Timestamp(0)
 }
 
 enum permissions_method {

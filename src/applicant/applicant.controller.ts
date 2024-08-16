@@ -9,6 +9,7 @@ import {
 import {
   CreateApplicantDataGroupDto,
   CreateApplicantDto,
+  CreateApplicantInformationDto,
 } from './dto/applicant.dto';
 // import { applicant } from '@prisma/client';
 import { ApplicantService } from './applicant.service';
@@ -37,5 +38,15 @@ export class ApplicantController {
     @Body() applicantDataGroup: CreateApplicantDataGroupDto,
   ) {
     return this.applicantService.insertApplicantDataGroup(applicantDataGroup);
+  }
+
+  @Post('/information')
+  @UseGuards(AuthenticationGuard)
+  insertApplicantInformation(
+    @Body() applicantinformation: CreateApplicantInformationDto,
+  ) {
+    return this.applicantService.insertApplicantInformation(
+      applicantinformation,
+    );
   }
 }

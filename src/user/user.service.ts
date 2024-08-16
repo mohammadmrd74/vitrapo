@@ -11,7 +11,7 @@ type selectedUser = {
   password: string;
   smsTimeLeft: Date;
 };
-type Without<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+
 @Injectable()
 export class UserService {
   constructor(
@@ -165,7 +165,9 @@ export class UserService {
     };
 
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: await this.jwtService.signAsync(payload, {
+        expiresIn: '1d',
+      }),
     };
   }
 
