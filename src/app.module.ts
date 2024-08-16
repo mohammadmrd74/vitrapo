@@ -6,6 +6,7 @@ import databaseConfig from 'src/common/config/databaseConfiguration';
 import { UserModule } from './user/user.module';
 import { ApplicantModule } from './applicant/applicant.module';
 import { ContractModule } from './contract/contract.module';
+import { DocumentModule } from './document/document.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -16,6 +17,7 @@ import { ContractModule } from './contract/contract.module';
     UserModule,
     ApplicantModule,
     ContractModule,
+    DocumentModule,
   ],
   controllers: [],
   providers: [],

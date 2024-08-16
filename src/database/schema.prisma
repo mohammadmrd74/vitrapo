@@ -150,10 +150,13 @@ model documents {
   docTitle                  String                      @unique(map: "documents_UN") @db.VarChar(100)
   docDescription            String?                     @db.VarChar(200)
   hasTranslate              Int                         @default(0) @db.TinyInt
-  groupName                 String?                     @db.VarChar(100)
+  documentGroupId           Int?
   createdAt                 DateTime                    @default(now()) @db.Timestamp(0)
   updatedAt                 DateTime?                   @db.Timestamp(0)
   applicantContractDocument applicantContractDocument[]
+  doumentGroups             doumentGroups?              @relation(fields: [documentGroupId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "documents_FK")
+
+  @@index([documentGroupId], map: "documents_FK")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -165,8 +168,10 @@ model installmentMessages {
   createdAt     DateTime     @default(now()) @db.Timestamp(0)
   updatedAt     DateTime?    @db.Timestamp(0)
   installments  installments @relation(fields: [installmentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installmentMessages_FK")
+  users         users        @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installmentMessages_FK_1")
 
   @@index([installmentId], map: "installmentMessages_FK")
+  @@index([userId], map: "installmentMessages_FK_1")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -291,23 +296,24 @@ model tickets {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model users {
-  id             Int              @id @default(autoincrement())
-  username       String           @unique(map: "users_UN_username") @db.VarChar(100)
-  password       String           @db.VarChar(100)
-  smscode        String?          @db.Char(4)
-  mobile         String?          @unique(map: "users_UN") @db.VarChar(11)
-  email          String?          @unique(map: "users_email_UN") @db.VarChar(50)
-  roleId         Int?             @default(1)
-  name           String?          @db.VarChar(100)
-  family         String?          @db.VarChar(100)
-  profilePicture String?          @db.VarChar(100)
-  status         Int?             @default(0) @db.TinyInt
-  smsTimeLeft    DateTime?        @db.Timestamp(0)
-  createdAt      DateTime         @default(now()) @db.Timestamp(0)
-  updatedAt      DateTime?        @db.Timestamp(0)
-  applicant      applicant[]
-  ticketMasseges ticketMasseges[]
-  roles          roles?           @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_FK")
+  id                  Int                   @id @default(autoincrement())
+  username            String                @unique(map: "users_UN_username") @db.VarChar(100)
+  password            String                @db.VarChar(100)
+  smscode             String?               @db.Char(4)
+  mobile              String?               @unique(map: "users_UN") @db.VarChar(11)
+  email               String?               @unique(map: "users_email_UN") @db.VarChar(50)
+  roleId              Int?                  @default(1)
+  name                String?               @db.VarChar(100)
+  family              String?               @db.VarChar(100)
+  profilePicture      String?               @db.VarChar(100)
+  status              Int?                  @default(0) @db.TinyInt
+  smsTimeLeft         DateTime?             @db.Timestamp(0)
+  createdAt           DateTime              @default(now()) @db.Timestamp(0)
+  updatedAt           DateTime?             @db.Timestamp(0)
+  applicant           applicant[]
+  installmentMessages installmentMessages[]
+  ticketMasseges      ticketMasseges[]
+  roles               roles?                @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_FK")
 
   @@index([roleId], map: "users_FK")
 }
@@ -331,6 +337,14 @@ model applicantContractDocumentMessage {
   message   String?   @db.VarChar(200)
   createdAt DateTime  @default(now()) @db.Timestamp(0)
   updatedAt DateTime? @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model doumentGroups {
+  id        Int         @id @default(autoincrement())
+  name      String      @db.VarChar(100)
+  createdAt DateTime    @default(now()) @db.Timestamp(0)
+  documents documents[]
 }
 
 enum permissions_method {
