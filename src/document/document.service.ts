@@ -33,7 +33,7 @@ export class DocumentService {
         });
       } catch (error) {
         console.log(error);
-        
+
         dbError(error);
 
         throw error;
