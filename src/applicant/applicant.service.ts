@@ -131,6 +131,13 @@ export class ApplicantService {
         where: {
           userId: user.sub,
         },
+        include: {
+          countries: {
+            include: {
+              countryTranslation: true,
+            },
+          },
+        },
       });
 
       return applicant;

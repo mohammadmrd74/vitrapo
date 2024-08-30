@@ -1,14 +1,24 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { MinioClientService } from 'src/minio-client/minio-client.service';
-import { ApproveUserDto, CreateUserDto, LoginUserDto } from './dto/user.dto';
+import {
+  ApproveUserDto,
+  changepasswordRequestDto,
+  ChangePasswordUserDto,
+  checkHashPasswordUserDto,
+  CreateUserDto,
+  LoginUserDto,
+} from './dto/user.dto';
 import { PrismaService } from 'src/database/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { users } from '@prisma/client';
+import { vtUser } from 'src/auth/authentication.guard';
+import { dbError } from 'src/common/dbError';
+import { v4 as uuid } from 'uuid';
 
 type selectedUser = {
   id: number;
-  password: string;
+  password?: string;
   smsTimeLeft: Date;
 };
 
@@ -56,6 +66,101 @@ export class UserService {
     const uploaded_image = await this.minioClientService.upload(image, bucket);
 
     return uploaded_image.url;
+  }
+
+  async changePasswordRequest(body: changepasswordRequestDto) {
+    const foundedUser = await this.prismaService.users.findFirst({
+      select: {
+        id: true,
+      },
+      where: {
+        username: body.username,
+      },
+    });
+
+    if (!foundedUser.id)
+      throw new HttpException('user not found', HttpStatus.NOT_FOUND);
+
+    const hash: string = uuid();
+    const createdHash = await this.prismaService.changepasswords.create({
+      data: {
+        userId: foundedUser.id,
+        sessionId: hash,
+      },
+    });
+
+    //todo: send sms hashed link
+
+    return createdHash;
+  }
+
+  async checkChangePassword(body: checkHashPasswordUserDto) {
+    try {
+      const pUser = await this.prismaService.changepasswords.update({
+        select: {
+          userId: true,
+          users: {
+            select: {
+              username: true,
+            },
+          },
+        },
+        data: {
+          isUsed: 1,
+        },
+        where: {
+          sessionId: body.hash,
+          isUsed: 0,
+        },
+      });
+
+      if (!pUser.userId)
+        throw new HttpException('user not found', HttpStatus.NOT_FOUND);
+
+      const foundUser = await this.prismaService.users.findFirst({
+        select: {
+          id: true,
+          smsTimeLeft: true,
+        },
+        where: {
+          id: pUser.userId,
+        },
+      });
+
+      if (
+        !foundUser.smsTimeLeft ||
+        new Date().getTime() - new Date(foundUser.smsTimeLeft).getTime() >
+          120000
+      ) {
+        const updateUser = await this.updateUserWithSMScode(foundUser);
+
+        return {
+          timeLeft:
+            120 -
+            Math.ceil(
+              (new Date().getTime() -
+                new Date(updateUser.smsTimeLeft).getTime()) /
+                1000,
+            ),
+          username: pUser.users.username,
+        };
+      }
+
+      return {
+        timeLeft:
+          120 -
+          Math.ceil(
+            (new Date().getTime() - new Date(foundUser.smsTimeLeft).getTime()) /
+              1000,
+          ),
+        username: pUser.users.username,
+      };
+    } catch (error) {
+      console.log(error);
+      dbError(error);
+
+      throw error;
+    }
   }
 
   async loginUser(loginUser: LoginUserDto) {
@@ -112,7 +217,7 @@ export class UserService {
   }
 
   async updateUserWithSMScode(foundUser: selectedUser) {
-    const code = Math.floor(Math.random() * 9000) + 1000;
+    const code = Math.floor(Math.random() * 90000) + 10000;
     const date = new Date();
     const updateUser = await this.prismaService.users.update({
       where: {
@@ -120,7 +225,7 @@ export class UserService {
       },
       data: {
         // smscode: code.toString(),
-        smscode: '1111',
+        smscode: '11111',
         smsTimeLeft: date,
       },
     });
@@ -137,10 +242,11 @@ export class UserService {
         email: true,
         roleId: true,
         username: true,
+        status: true,
       },
       where: {
         username: approveUser.username,
-        smscode: '1111',
+        smscode: '11111',
         // smscode: approveUser.code,
       },
     });
@@ -168,6 +274,7 @@ export class UserService {
       access_token: await this.jwtService.signAsync(payload, {
         expiresIn: '1d',
       }),
+      isActive: foundUser.status,
     };
   }
 
@@ -179,6 +286,30 @@ export class UserService {
     );
 
     return result;
+  }
+
+  async changepassword(body: ChangePasswordUserDto, user: vtUser) {
+    const hash = await bcrypt.hash(body.password, 10);
+
+    try {
+      const updateUser = await this.prismaService.users.update({
+        where: {
+          id: user.sub,
+        },
+        data: {
+          password: hash,
+          status: 1,
+        },
+      });
+      return {
+        isActive: updateUser.status,
+      };
+    } catch (error) {
+      console.log(error);
+      dbError(error);
+
+      throw error;
+    }
   }
 
   async getUserList() {
