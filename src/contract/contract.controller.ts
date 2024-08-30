@@ -12,7 +12,6 @@ import {
   Get,
   ParseIntPipe,
   Request,
-  Put,
 } from '@nestjs/common';
 import { ContractService } from './contract.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -21,7 +20,6 @@ import { AuthenticationGuard, vtUser } from 'src/auth/authentication.guard';
 import { AuthorizationGuard } from 'src/auth/authorization.guard';
 import {
   CreateContractInstallmentDto,
-  CreateContractInstallmentFileDto,
   CreateInstallmentMessageDto,
 } from './dto/createContractInstallment.dto';
 

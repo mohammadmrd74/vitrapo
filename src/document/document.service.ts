@@ -1,11 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
-import { CreateDocumentDto } from './dto/createDocument.dto';
+import {
+  CreateApplicantDocumentDto,
+  CreateContractApplicantDocumenFileDto,
+  CreateDocumentDto,
+} from './dto/createDocument.dto';
 import { dbError } from 'src/common/dbError';
+import { vtUser } from 'src/auth/authentication.guard';
+import { MinioClientService } from 'src/minio-client/minio-client.service';
 
 @Injectable()
 export class DocumentService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private minioClientService: MinioClientService,
+    private prismaService: PrismaService,
+  ) {}
 
   async addDocument(document: CreateDocumentDto) {
     if (document.documentGroupId) {
@@ -42,6 +56,114 @@ export class DocumentService {
       throw new Error(
         'Either documentGroupId or documentGroupTitle must be provided',
       );
+    }
+  }
+
+  async addDocumentForApplicant(body: CreateApplicantDocumentDto) {
+    try {
+      const insertObjects = body.documentIds.map((item) => ({
+        applicantId: body.applicantId,
+        contractId: body.contractId,
+        documentId: item,
+      }));
+      return await this.prismaService.applicantContractDocument.createMany({
+        data: insertObjects,
+      });
+    } catch (error) {
+      console.log(error);
+
+      dbError(error);
+
+      throw error;
+    }
+  }
+
+  async getDocument(applicantId: number, contractId: number, user: vtUser) {
+    try {
+      const applicantDocuments =
+        await this.prismaService.applicantContractDocument.findMany({
+          where: {
+            applicantId: applicantId,
+            contractId: contractId,
+            applicant: {
+              userId: user.sub,
+            },
+          },
+          include: {
+            documents: true,
+          },
+        });
+
+      return applicantDocuments;
+    } catch (error) {
+      console.log(error);
+
+      throw new NotFoundException();
+    }
+  }
+
+  async insertContractApplicantDocument(
+    body: CreateContractApplicantDocumenFileDto,
+    files: {
+      original?: Express.Multer.File[];
+      translate?: Express.Multer.File[];
+    },
+  ) {
+    if (!files.original && !files.translate)
+      throw new HttpException(
+        'Please send at least one file.',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+
+    let originalFilePath: string;
+    let translateFilePath: string;
+    try {
+      const updateBody = {};
+      if (files.original && files.original[0]) {
+        originalFilePath = await this.uploadFile(
+          body.applicantId,
+          files.original[0],
+        );
+        updateBody['original'] = originalFilePath;
+      }
+      if (files.translate && files.translate[0]) {
+        translateFilePath = await this.uploadFile(
+          body.applicantId,
+          files.translate[0],
+        );
+        updateBody['translate'] = translateFilePath;
+      }
+
+      const updatedInstallment =
+        await this.prismaService.applicantContractDocument.update({
+          where: {
+            applicantId_contractId_documentId: {
+              applicantId: parseInt(body.applicantId, 10),
+              contractId: parseInt(body.contractId, 10),
+              documentId: parseInt(body.documentId, 10),
+            },
+          },
+          data: updateBody,
+        });
+
+      return updatedInstallment;
+    } catch (error) {
+      console.log(error);
+      dbError(error);
+
+      throw error;
+    }
+  }
+  async uploadFile(applicantId: string, file: Express.Multer.File) {
+    try {
+      const uploaded_file = await this.minioClientService.upload(
+        file,
+        `applicantdocuments`,
+      );
+
+      return uploaded_file.url;
+    } catch (error) {
+      throw new Error('upload error.');
     }
   }
 }

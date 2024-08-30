@@ -1,8 +1,25 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  ParseIntPipe,
+  Post,
+  Query,
+  Request,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { DocumentService } from './document.service';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthenticationGuard, vtUser } from 'src/auth/authentication.guard';
 import { AuthorizationGuard } from 'src/auth/authorization.guard';
-import { CreateDocumentDto } from './dto/createDocument.dto';
+import {
+  CreateApplicantDocumentDto,
+  CreateContractApplicantDocumenFileDto,
+  CreateDocumentDto,
+} from './dto/createDocument.dto';
+import { FilesValidationPipe } from 'src/common/validationPipes/fileValidationPipe';
 
 @Controller('document')
 export class DocumentController {
@@ -12,5 +29,40 @@ export class DocumentController {
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   addDocument(@Body() document: CreateDocumentDto) {
     return this.documentService.addDocument(document);
+  }
+
+  @Post('/applicant')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  addDocumentForApplicant(@Body() body: CreateApplicantDocumentDto) {
+    return this.documentService.addDocumentForApplicant(body);
+  }
+
+  @Get('/')
+  @UseGuards(AuthenticationGuard)
+  getDocument(
+    @Query('applicantId', ParseIntPipe) applicantId: number,
+    @Query('contractId', ParseIntPipe) contractId: number,
+    @Request() req: Request & { user: vtUser },
+  ) {
+    return this.documentService.getDocument(applicantId, contractId, req.user);
+  }
+
+  @UseGuards(AuthenticationGuard)
+  @Post('/file')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'original', maxCount: 1 },
+      { name: 'translate', maxCount: 1 },
+    ]),
+  )
+  insertContractApplicantDocument(
+    @Body() body: CreateContractApplicantDocumenFileDto,
+    @UploadedFiles(new FilesValidationPipe())
+    files: {
+      original?: Express.Multer.File[];
+      translate?: Express.Multer.File[];
+    },
+  ) {
+    return this.documentService.insertContractApplicantDocument(body, files);
   }
 }
