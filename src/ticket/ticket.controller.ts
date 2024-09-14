@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   ParseIntPipe,
   Post,
@@ -11,13 +12,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { TicketService } from './ticket.service';
-import {
-  AnyFilesInterceptor,
-  FileFieldsInterceptor,
-} from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { AuthenticationGuard, vtUser } from 'src/auth/authentication.guard';
 import { AuthorizationGuard } from 'src/auth/authorization.guard';
-import { CreateTicketDto } from './dto/createTicket.dto';
+import {
+  CreateTicketDto,
+  CreateTicketMessageDto,
+} from './dto/createTicket.dto';
 import { CreateTicketCategoryDto } from './dto/createTicketCategory.dto';
 import { FilesValidationPipe } from 'src/common/validationPipes/fileValidationPipe';
 
@@ -27,30 +28,20 @@ export class TicketController {
 
   @Post('/category')
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
-  addDocument(@Body() document: CreateTicketCategoryDto) {
+  addTicketCategory(@Body() document: CreateTicketCategoryDto) {
     return this.ticketService.addTicketCategory(document);
   }
 
-  // @Post('/applicant')
-  // @UseGuards(AuthenticationGuard, AuthorizationGuard)
-  // addDocumentForApplicant(@Body() body: CreateApplicantDocumentDto) {
-  //   return this.documentService.addDocumentForApplicant(body);
-  // }
-
-  // @Get('/')
-  // @UseGuards(AuthenticationGuard)
-  // getDocument(
-  //   @Query('applicantId', ParseIntPipe) applicantId: number,
-  //   @Query('contractId', ParseIntPipe) contractId: number,
-  //   @Request() req: Request & { user: vtUser },
-  // ) {
-  //   return this.documentService.getDocument(applicantId, contractId, req.user);
-  // }
+  @Get('/category')
+  @UseGuards(AuthenticationGuard)
+  getTicketCategory() {
+    return this.ticketService.getTicketCategory();
+  }
 
   @UseGuards(AuthenticationGuard)
   @Post('/')
   @UseInterceptors(AnyFilesInterceptor())
-  insertContractApplicantDocument(
+  insertTicket(
     @Body() body: CreateTicketDto,
     @UploadedFiles(new FilesValidationPipe())
     files: Array<Express.Multer.File>,
@@ -59,24 +50,34 @@ export class TicketController {
     return this.ticketService.insertTicket(body, files, req.user, 'tickets');
   }
 
-  // @UseGuards(AuthenticationGuard)
-  // @Post('/message')
-  // insertContractApplicantMessage(
-  //   @Body() body: CreateContractApplicantDocumenMessageDto,
+  @UseGuards(AuthenticationGuard)
+  @Post('/reply')
+  @UseInterceptors(AnyFilesInterceptor())
+  replyTicket(
+    @Body() body: CreateTicketMessageDto,
+    @UploadedFiles(new FilesValidationPipe())
+    files: Array<Express.Multer.File>,
+    @Request() req: Request & { user: vtUser },
+  ) {
+    return this.ticketService.replyTicket(body, files, req.user, 'tickets');
+  }
 
-  //   @Request() req: Request & { user: vtUser },
-  // ) {
-  //   return this.documentService.insertContractApplicantMessage(body, req.user);
-  // }
+  @UseGuards(AuthenticationGuard)
+  @Get('/')
+  getAllTickets(
+    @Request() req: Request & { user: vtUser },
+    @Query('take', new DefaultValuePipe(20), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(0), ParseIntPipe) skip: number,
+  ) {
+    return this.ticketService.getAllTickets(req.user, take, skip);
+  }
 
-  // @UseGuards(AuthenticationGuard)
-  // @Get('/message')
-  // getContractApplicantMessage(
-  //   @Query('applicantContractDocumentId', ParseIntPipe)
-  //   applicantContractDocumentId: number,
-  // ) {
-  //   return this.documentService.getContractApplicantMessage(
-  //     applicantContractDocumentId,
-  //   );
-  // }
+  @UseGuards(AuthenticationGuard)
+  @Get('/reply')
+  getTicketReplies(
+    @Request() req: Request & { user: vtUser },
+    @Query('ticketId', ParseIntPipe) ticketId: number,
+  ) {
+    return this.ticketService.getTicketReplies(req.user, ticketId);
+  }
 }
