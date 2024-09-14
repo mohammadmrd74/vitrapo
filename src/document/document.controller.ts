@@ -17,6 +17,7 @@ import { AuthorizationGuard } from 'src/auth/authorization.guard';
 import {
   CreateApplicantDocumentDto,
   CreateContractApplicantDocumenFileDto,
+  CreateContractApplicantDocumenMessageDto,
   CreateDocumentDto,
 } from './dto/createDocument.dto';
 import { FilesValidationPipe } from 'src/common/validationPipes/fileValidationPipe';
@@ -64,5 +65,26 @@ export class DocumentController {
     },
   ) {
     return this.documentService.insertContractApplicantDocument(body, files);
+  }
+
+  @UseGuards(AuthenticationGuard)
+  @Post('/message')
+  insertContractApplicantMessage(
+    @Body() body: CreateContractApplicantDocumenMessageDto,
+
+    @Request() req: Request & { user: vtUser },
+  ) {
+    return this.documentService.insertContractApplicantMessage(body, req.user);
+  }
+
+  @UseGuards(AuthenticationGuard)
+  @Get('/message')
+  getContractApplicantMessage(
+    @Query('applicantContractDocumentId', ParseIntPipe)
+    applicantContractDocumentId: number,
+  ) {
+    return this.documentService.getContractApplicantMessage(
+      applicantContractDocumentId,
+    );
   }
 }

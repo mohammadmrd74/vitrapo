@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { ApplicantModule } from './applicant/applicant.module';
 import { ContractModule } from './contract/contract.module';
 import { DocumentModule } from './document/document.module';
+import { TicketModule } from './ticket/ticket.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -18,6 +19,7 @@ import { DocumentModule } from './document/document.module';
     ApplicantModule,
     ContractModule,
     DocumentModule,
+    TicketModule,
   ],
   controllers: [],
   providers: [],

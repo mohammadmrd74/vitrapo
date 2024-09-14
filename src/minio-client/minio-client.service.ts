@@ -41,6 +41,40 @@ export class MinioClientService {
     };
   }
 
+  public async uploadMany(
+    files: Array<Express.Multer.File>,
+    baseBucket: string,
+  ) {
+    const urls = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const temp_filename = Date.now().toString();
+      const hashedFileName = crypto
+        .createHash('md5')
+        .update(temp_filename)
+        .digest('hex');
+      const ext = file.originalname.substring(
+        file.originalname.lastIndexOf('.'),
+        file.originalname.length,
+      );
+      const filename = hashedFileName + ext;
+      const fileName: string = `${filename}`;
+      const fileBuffer = file.buffer;
+      try {
+        await this.client.putObject(baseBucket, fileName, fileBuffer);
+      } catch (error) {
+        console.log(error);
+
+        throw new HttpException('Error uploading file', HttpStatus.BAD_REQUEST);
+      }
+      urls.push(
+        `${config.MINIO_ENDPOINT}:${config.MINIO_PORT}/${baseBucket}/${filename}`,
+      );
+    }
+
+    return urls;
+  }
+
   async delete(objetName: string, baseBucket: string) {
     try {
       await this.client.removeObject(baseBucket, objetName);

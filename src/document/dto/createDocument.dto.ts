@@ -48,3 +48,11 @@ export class CreateContractApplicantDocumenFileDto {
   @IsString()
   documentId: string;
 }
+
+export class CreateContractApplicantDocumenMessageDto {
+  @IsNumber()
+  ACDId: number;
+
+  @IsString()
+  message: string;
+}

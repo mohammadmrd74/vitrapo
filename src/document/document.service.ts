@@ -8,6 +8,7 @@ import { PrismaService } from 'src/database/prisma.service';
 import {
   CreateApplicantDocumentDto,
   CreateContractApplicantDocumenFileDto,
+  CreateContractApplicantDocumenMessageDto,
   CreateDocumentDto,
 } from './dto/createDocument.dto';
 import { dbError } from 'src/common/dbError';
@@ -80,17 +81,61 @@ export class DocumentService {
 
   async getDocument(applicantId: number, contractId: number, user: vtUser) {
     try {
+      // const applicantDocuments =
+      //   await this.prismaService.applicantContractDocument.findMany({
+      //     where: {
+      //       applicantId: applicantId,
+      //       contractId: contractId,
+      //       applicant: {
+      //         userId: user.sub,
+      //       },
+      //     },
+      //     include: {
+      //       documents: {
+      //         include: {
+      //           doumentGroups: true,
+      //         },
+      //       },
+      //     },
+      //   });
+
+      // where: {
+      //   applicantId: applicantId,
+      //   contractId: contractId,
+      //   applicant: {
+      //     userId: user.sub,
+      //   },
+      // },
       const applicantDocuments =
-        await this.prismaService.applicantContractDocument.findMany({
+        await this.prismaService.doumentGroups.findMany({
           where: {
-            applicantId: applicantId,
-            contractId: contractId,
-            applicant: {
-              userId: user.sub,
+            documents: {
+              some: {
+                applicantContractDocument: {
+                  some: {
+                    applicantId: applicantId,
+                    contractId: contractId,
+                    applicant: {
+                      userId: user.sub,
+                    },
+                  },
+                },
+              },
             },
           },
           include: {
-            documents: true,
+            documents: {
+              include: {
+                applicantContractDocument: {
+                  select: {
+                    id: true,
+                    original: true,
+                    translate: true,
+                    wantTranslate: true,
+                  },
+                },
+              },
+            },
           },
         });
 
@@ -154,6 +199,27 @@ export class DocumentService {
       throw error;
     }
   }
+
+  async insertContractApplicantMessage(
+    body: CreateContractApplicantDocumenMessageDto,
+    user: vtUser,
+  ) {
+    try {
+      return await this.prismaService.applicantContractDocumentMessage.create({
+        data: {
+          ...body,
+          userId: user.sub,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+
+      dbError(error);
+
+      throw error;
+    }
+  }
+
   async uploadFile(applicantId: string, file: Express.Multer.File) {
     try {
       const uploaded_file = await this.minioClientService.upload(
@@ -164,6 +230,37 @@ export class DocumentService {
       return uploaded_file.url;
     } catch (error) {
       throw new Error('upload error.');
+    }
+  }
+
+  async getContractApplicantMessage(applicantContractDocumentId: number) {
+    try {
+      const applicantDocumentMessage =
+        await this.prismaService.applicantContractDocumentMessage.findMany({
+          where: {
+            ACDId: applicantContractDocumentId,
+          },
+          select: {
+            id: true,
+            message: true,
+            createdAt: true,
+            users: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                family: true,
+                profilePicture: true,
+              },
+            },
+          },
+        });
+
+      return applicantDocumentMessage;
+    } catch (error) {
+      console.log(error);
+
+      throw new NotFoundException();
     }
   }
 }
