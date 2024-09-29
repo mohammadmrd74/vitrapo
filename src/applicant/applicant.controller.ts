@@ -5,6 +5,8 @@ import {
   Post,
   UseGuards,
   Request,
+  ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import {
   CreateApplicantDataGroupDto,
@@ -32,6 +34,12 @@ export class ApplicantController {
     return this.applicantService.getApplicant(req.user);
   }
 
+  @Get('/datagroup')
+  @UseGuards(AuthenticationGuard)
+  getDateGroup(@Query('applicantId', ParseIntPipe) applicantId: number) {
+    return this.applicantService.getDataGroup(applicantId);
+  }
+
   @Post('/datagroup')
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   insertApplicantDataGroup(
@@ -45,8 +53,9 @@ export class ApplicantController {
   insertApplicantInformation(
     @Body() applicantinformation: CreateApplicantInformationDto,
   ) {
-    return this.applicantService.insertApplicantInformation(
-      applicantinformation,
-    );
+    return this.applicantService.insertApplicantInformation({
+      ...applicantinformation,
+      contractId: -1,
+    });
   }
 }

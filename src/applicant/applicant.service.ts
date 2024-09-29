@@ -46,7 +46,30 @@ export class ApplicantService {
       });
 
       if (!dbFields) throw new NotFoundException();
+      if (!applicantInformation.values) {
+        try {
+          const upsertApplicantInformation =
+            await this.prismaService.applicantInformation.upsert({
+              where: {
+                applicantId_contractId_dataGroupId: {
+                  applicantId: applicantInformation.applicantId,
+                  contractId: -1,
+                  dataGroupId: applicantInformation.dataGroupId,
+                },
+              },
+              update: {
+                values: {},
+              },
+              create: applicantInformation,
+            });
 
+          return upsertApplicantInformation;
+        } catch (error) {
+          console.log(error);
+          dbError(error);
+          throw new NotFoundException();
+        }
+      }
       if (keyExistsInArray(dbFields.fields, applicantInformation.values)) {
         try {
           const upsertApplicantInformation =
@@ -54,7 +77,7 @@ export class ApplicantService {
               where: {
                 applicantId_contractId_dataGroupId: {
                   applicantId: applicantInformation.applicantId,
-                  contractId: applicantInformation.contractId,
+                  contractId: -1,
                   dataGroupId: applicantInformation.dataGroupId,
                 },
               },
@@ -132,6 +155,7 @@ export class ApplicantService {
           userId: user.sub,
         },
         include: {
+          users: true,
           countries: {
             include: {
               countryTranslation: true,
@@ -142,6 +166,46 @@ export class ApplicantService {
 
       return applicant;
     } catch (error) {
+      throw new NotFoundException();
+    }
+  }
+
+  async getDataGroup(applicantId) {
+    try {
+      const dataGroup = await this.prismaService.applicantDataGroup.findMany({
+        where: {
+          applicantInformation: {
+            every: {
+              applicantId: applicantId,
+            },
+          },
+        },
+        include: {
+          applicantInformation: true,
+        },
+      });
+      const rightData = dataGroup.map((d) => {
+        return {
+          id: d.id,
+          title: d.title,
+          description: d.description,
+          fields: (d.fields as Array<{ key: string }>).map((f) => {
+            const val = d.applicantInformation.find((appInfo) =>
+              appInfo.values ? appInfo.values[f.key] : '',
+            );
+
+            return {
+              ...f,
+              value: val ? val.values[f.key] : '',
+            };
+          }),
+        };
+      });
+
+      return rightData;
+    } catch (error) {
+      console.log(error);
+
       throw new NotFoundException();
     }
   }

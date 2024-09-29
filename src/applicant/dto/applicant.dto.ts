@@ -7,6 +7,7 @@ import {
   IsDateString,
   IsObject,
   IsArray,
+  IsOptional,
 } from 'class-validator';
 
 enum visaTypes {
@@ -91,12 +92,14 @@ export class CreateApplicantInformationDto {
   applicantId: number;
 
   @IsNumber()
+  @IsOptional()
   contractId: number;
 
   @IsNumber()
   dataGroupId: number;
 
   @IsObject()
+  @IsOptional()
   values: object;
 }
 
