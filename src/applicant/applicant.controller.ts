@@ -7,6 +7,7 @@ import {
   Request,
   ParseIntPipe,
   Query,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import {
   CreateApplicantDataGroupDto,
@@ -32,6 +33,15 @@ export class ApplicantController {
   @UseGuards(AuthenticationGuard)
   getApplicant(@Request() req: Request & { user: vtUser }) {
     return this.applicantService.getApplicant(req.user);
+  }
+
+  @Get('/list')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  getApplicantList(
+    @Query('take', new DefaultValuePipe(20), ParseIntPipe) take: number,
+    @Query('skip', new DefaultValuePipe(0), ParseIntPipe) skip: number,
+  ) {
+    return this.applicantService.getApplicantList(take, skip);
   }
 
   @Get('/datagroup')

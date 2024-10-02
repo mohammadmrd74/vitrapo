@@ -64,6 +64,12 @@ export class ContractController {
   }
 
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Get('/list')
+  getContractList(@Query('applicantId', ParseIntPipe) applicantId: number) {
+    return this.contractService.getContractList(applicantId);
+  }
+
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
   @Post('/installment')
   insertContractInstallment(
     @Body() createContractInstallment: CreateContractInstallmentDto,

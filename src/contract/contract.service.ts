@@ -40,6 +40,22 @@ export class ContractService {
     }
   }
 
+  async getContractList(applicantId: number) {
+    try {
+      const contract = await this.prismaService.contracts.findMany({
+        where: {
+          applicantId: applicantId,
+        },
+      });
+
+      return contract;
+    } catch (error) {
+      console.log(error);
+
+      throw new NotFoundException();
+    }
+  }
+
   async insertContract(
     createContract: CreateContractDto,
     file: Express.Multer.File,

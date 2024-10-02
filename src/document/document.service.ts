@@ -79,46 +79,28 @@ export class DocumentService {
     }
   }
 
-  async getDocument(applicantId: number, contractId: number, user: vtUser) {
+  async getDocument(
+    applicantId: number,
+    contractId: number,
+    user: vtUser,
+    canAccess: boolean = false,
+  ) {
     try {
-      // const applicantDocuments =
-      //   await this.prismaService.applicantContractDocument.findMany({
-      //     where: {
-      //       applicantId: applicantId,
-      //       contractId: contractId,
-      //       applicant: {
-      //         userId: user.sub,
-      //       },
-      //     },
-      //     include: {
-      //       documents: {
-      //         include: {
-      //           doumentGroups: true,
-      //         },
-      //       },
-      //     },
-      //   });
-
-      // where: {
-      //   applicantId: applicantId,
-      //   contractId: contractId,
-      //   applicant: {
-      //     userId: user.sub,
-      //   },
-      // },
       const applicantDocuments =
         await this.prismaService.doumentGroups.findMany({
           where: {
             documents: {
               some: {
                 applicantContractDocument: {
-                  some: {
-                    applicantId: applicantId,
-                    contractId: contractId,
-                    applicant: {
-                      userId: user.sub,
-                    },
-                  },
+                  some: canAccess
+                    ? { applicantId: applicantId, contractId: contractId }
+                    : {
+                        applicantId: applicantId,
+                        contractId: contractId,
+                        applicant: {
+                          userId: user.sub,
+                        },
+                      },
                 },
               },
             },

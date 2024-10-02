@@ -20,7 +20,7 @@ export class AuthorizationGuard implements CanActivate {
         await this.prismaService.rolePermission_NN.findFirst({
           where: {
             permissions: {
-              path: request.url,
+              path: request.route.path,
               method: request.method,
             },
             roles: {

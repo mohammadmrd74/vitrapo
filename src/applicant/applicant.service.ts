@@ -170,6 +170,27 @@ export class ApplicantService {
     }
   }
 
+  async getApplicantList(take, skip) {
+    try {
+      const applicants = await this.prismaService.applicant.findMany({
+        include: {
+          users: true,
+          countries: {
+            include: {
+              countryTranslation: true,
+            },
+          },
+        },
+        take: take,
+        skip: skip,
+      });
+
+      return applicants;
+    } catch (error) {
+      throw new NotFoundException();
+    }
+  }
+
   async getDataGroup(applicantId) {
     try {
       const dataGroup = await this.prismaService.applicantDataGroup.findMany({

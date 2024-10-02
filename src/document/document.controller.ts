@@ -48,6 +48,21 @@ export class DocumentController {
     return this.documentService.getDocument(applicantId, contractId, req.user);
   }
 
+  @Get('/list')
+  @UseGuards(AuthenticationGuard)
+  getDocumentList(
+    @Query('applicantId', ParseIntPipe) applicantId: number,
+    @Query('contractId', ParseIntPipe) contractId: number,
+    @Request() req: Request & { user: vtUser },
+  ) {
+    return this.documentService.getDocument(
+      applicantId,
+      contractId,
+      req.user,
+      true,
+    );
+  }
+
   @UseGuards(AuthenticationGuard)
   @Post('/file')
   @UseInterceptors(
