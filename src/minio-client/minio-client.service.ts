@@ -1,11 +1,14 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { MinioService, MinioClient } from 'nestjs-minio-client';
-import { config } from './config';
 import * as crypto from 'crypto';
+import { ConfigService } from '@nestjs/config/dist/config.service';
 
 @Injectable()
 export class MinioClientService {
-  constructor(private readonly minio: MinioService) {}
+  constructor(
+    private readonly minio: MinioService,
+    private configService: ConfigService,
+  ) {}
 
   public get client(): MinioClient {
     return this.minio.client;
@@ -37,7 +40,7 @@ export class MinioClientService {
     }
 
     return {
-      url: `${config.MINIO_ENDPOINT}:${config.MINIO_PORT}/${baseBucket}/${filename}`,
+      url: `${this.configService.get<string>('MINIO_ENDPOINT')}:${this.configService.get<string>('MINIO_PORT')}/${baseBucket}/${filename}`,
     };
   }
 
@@ -68,7 +71,7 @@ export class MinioClientService {
         throw new HttpException('Error uploading file', HttpStatus.BAD_REQUEST);
       }
       urls.push(
-        `${config.MINIO_ENDPOINT}:${config.MINIO_PORT}/${baseBucket}/${filename}`,
+        `${this.configService.get<string>('MINIO_ENDPOINT')}:${this.configService.get<string>('MINIO_PORT')}/${baseBucket}/${filename}`,
       );
     }
 

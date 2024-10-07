@@ -1,6 +1,0 @@
-export const config = {
-  MINIO_ENDPOINT: 'localhost',
-  MINIO_PORT: 9000,
-  MINIO_ACCESSKEY: '3DFBpKNcQZRQZcFaQFRl',
-  MINIO_SECRETKEY: 'NbiX5HFRuJULyNtF0xgpz7pfLLTPgyU2nBJXmDs8',
-};
