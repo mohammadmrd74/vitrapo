@@ -48,7 +48,7 @@ export class MinioClientService {
     files: Array<Express.Multer.File>,
     baseBucket: string,
   ) {
-    const urls = [];
+    const urls: Array<string> = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const temp_filename = Date.now().toString();

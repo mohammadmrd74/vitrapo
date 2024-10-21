@@ -4,6 +4,7 @@ import {
   Get,
   ParseIntPipe,
   Post,
+  Put,
   Query,
   Request,
   UploadedFiles,
@@ -15,6 +16,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthenticationGuard, vtUser } from 'src/auth/authentication.guard';
 import { AuthorizationGuard } from 'src/auth/authorization.guard';
 import {
+  ChangeStatusDocumentDto,
   CreateApplicantDocumentDto,
   CreateContractApplicantDocumenFileDto,
   CreateContractApplicantDocumenMessageDto,
@@ -30,6 +32,12 @@ export class DocumentController {
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   addDocument(@Body() document: CreateDocumentDto) {
     return this.documentService.addDocument(document);
+  }
+
+  @Put('/changestatus')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  changeStatus(@Body() document: ChangeStatusDocumentDto) {
+    return this.documentService.changeStatus(document);
   }
 
   @Post('/applicant')

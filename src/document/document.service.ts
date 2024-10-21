@@ -6,10 +6,12 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import {
+  ChangeStatusDocumentDto,
   CreateApplicantDocumentDto,
   CreateContractApplicantDocumenFileDto,
   CreateContractApplicantDocumenMessageDto,
   CreateDocumentDto,
+  selectedUser,
 } from './dto/createDocument.dto';
 import { dbError } from 'src/common/dbError';
 import { vtUser } from 'src/auth/authentication.guard';
@@ -57,6 +59,22 @@ export class DocumentService {
       throw new Error(
         'Either documentGroupId or documentGroupTitle must be provided',
       );
+    }
+  }
+  async changeStatus(document: ChangeStatusDocumentDto) {
+    try {
+      return await this.prismaService.applicantContractDocument.update({
+        where: {
+          id: document.documentId,
+        },
+        data: {
+          status: document.status,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+
+      dbError(error);
     }
   }
 
@@ -107,7 +125,10 @@ export class DocumentService {
           },
           include: {
             documents: {
-              include: {
+              select: {
+                docTitle: true,
+                docDescription: true,
+                hasTranslate: true,
                 applicantContractDocument: {
                   select: {
                     id: true,
@@ -145,7 +166,9 @@ export class DocumentService {
     let originalFilePath: string;
     let translateFilePath: string;
     try {
-      const updateBody = {};
+      const updateBody = {
+        status: selectedUser.waiting,
+      };
       if (files.original && files.original[0]) {
         originalFilePath = await this.uploadFile(
           body.applicantId,

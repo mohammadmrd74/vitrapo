@@ -4,7 +4,15 @@ import {
   IsNumber,
   IsOptional,
   IsArray,
+  IsEnum,
 } from 'class-validator';
+
+export enum selectedUser {
+  empty = 'empty',
+  approved = 'approved',
+  rejected = 'rejected',
+  waiting = 'waiting',
+}
 
 export class CreateDocumentDto {
   @IsString()
@@ -24,6 +32,13 @@ export class CreateDocumentDto {
   @IsString()
   @IsOptional()
   documentGroupTitle: string;
+}
+export class ChangeStatusDocumentDto {
+  @IsNumber()
+  documentId: number;
+
+  @IsEnum(selectedUser)
+  status: selectedUser;
 }
 
 export class CreateApplicantDocumentDto {

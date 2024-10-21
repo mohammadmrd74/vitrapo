@@ -140,11 +140,11 @@ export class ContractService {
 
   async insertInstallmentFile(
     installment: CreateContractInstallmentFileDto,
-    file: Express.Multer.File,
+    files: Array<Express.Multer.File>,
   ) {
     try {
-      const uploaded_image = await this.minioClientService.upload(
-        file,
+      const uploaded_files = await this.minioClientService.uploadMany(
+        files,
         'installments',
       );
       const updatedInstallment = await this.prismaService.installments.update({
@@ -152,7 +152,7 @@ export class ContractService {
           id: parseInt(installment.installmentId, 10),
         },
         data: {
-          documentFile: uploaded_image.url,
+          documentFile: uploaded_files,
         },
       });
 

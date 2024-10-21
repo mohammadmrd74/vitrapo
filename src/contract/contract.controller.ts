@@ -13,9 +13,10 @@ import {
   Put,
   ParseIntPipe,
   Request,
+  UploadedFiles,
 } from '@nestjs/common';
 import { ContractService } from './contract.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { CreateContractDto } from './dto/createContract.dto';
 import { AuthenticationGuard, vtUser } from 'src/auth/authentication.guard';
 import { AuthorizationGuard } from 'src/auth/authorization.guard';
@@ -24,6 +25,7 @@ import {
   CreateContractInstallmentFileDto,
   CreateInstallmentMessageDto,
 } from './dto/createContractInstallment.dto';
+import { FilesValidationPipe } from 'src/common/validationPipes/fileValidationPipe';
 
 @Controller('contract')
 export class ContractController {
@@ -81,25 +83,15 @@ export class ContractController {
 
   @UseGuards(AuthenticationGuard)
   @Put('/installment/file')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files'))
   insertInstallmentFile(
     @Body() createInstallmentFile: CreateContractInstallmentFileDto,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({
-            maxSize: 500000,
-            message: 'size should be less than 500kb',
-          }),
-          new FileTypeValidator({ fileType: 'image/jpeg|image/png' }),
-        ],
-      }),
-    )
-    file: Express.Multer.File,
+    @UploadedFiles(new FilesValidationPipe())
+    files: Array<Express.Multer.File>,
   ) {
     return this.contractService.insertInstallmentFile(
       createInstallmentFile,
-      file,
+      files,
     );
   }
 
