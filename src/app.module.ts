@@ -8,6 +8,7 @@ import { ApplicantModule } from './applicant/applicant.module';
 import { ContractModule } from './contract/contract.module';
 import { DocumentModule } from './document/document.module';
 import { TicketModule } from './ticket/ticket.module';
+import { NotificationModule } from './notification/notification.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,6 +21,7 @@ import { TicketModule } from './ticket/ticket.module';
     ContractModule,
     DocumentModule,
     TicketModule,
+    NotificationModule,
   ],
   controllers: [],
   providers: [],

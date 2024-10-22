@@ -28,15 +28,22 @@ export class ContractService {
           applicantId: applicantId,
           applicant: {
             userId: user.sub,
+            isConfirmed: true,
           },
         },
       });
+      if (!contract.length) {
+        throw new HttpException(
+          `applicant not confirmed`,
+          HttpStatus.FORBIDDEN,
+        );
+      }
 
       return contract;
     } catch (error) {
       console.log(error);
 
-      throw new NotFoundException();
+      throw error;
     }
   }
 
@@ -126,15 +133,22 @@ export class ContractService {
           contractId: contractId,
           applicant: {
             userId: user.sub,
+            isConfirmed: true,
           },
         },
       });
+      if (!installments.length) {
+        throw new HttpException(
+          `applicant not confirmed`,
+          HttpStatus.FORBIDDEN,
+        );
+      }
 
       return installments;
     } catch (error) {
       console.log(error);
 
-      throw new NotFoundException();
+      throw error;
     }
   }
 

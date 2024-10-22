@@ -87,6 +87,11 @@ export class CreateApplicantDto {
   gender: gender;
 }
 
+export class ConfirmApplicantDto {
+  @IsNumber()
+  applicantId: number;
+}
+
 export class CreateApplicantInformationDto {
   @IsNumber()
   applicantId: number;

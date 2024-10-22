@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import {
+  ConfirmApplicantDto,
   CreateApplicantDataGroupDto,
   CreateApplicantDto,
   CreateApplicantInformationDto,
@@ -104,6 +105,27 @@ export class ApplicantService {
       console.log(error);
 
       dbError(error);
+      throw new NotFoundException();
+    }
+  }
+  async confirmData(user: vtUser, applicant: ConfirmApplicantDto) {
+    try {
+      const confirmed = await this.prismaService.applicant.update({
+        where: {
+          id: applicant.applicantId,
+          users: {
+            id: user.sub,
+          },
+        },
+        data: {
+          isConfirmed: true,
+        },
+      });
+
+      return confirmed;
+    } catch (error) {
+      dbError(error);
+
       throw new NotFoundException();
     }
   }
@@ -210,16 +232,22 @@ export class ApplicantService {
           id: d.id,
           title: d.title,
           description: d.description,
-          fields: (d.fields as Array<{ key: string }>).map((f) => {
-            const val = d.applicantInformation.find((appInfo) =>
-              appInfo.values ? appInfo.values[f.key] : '',
-            );
+          fields: (d.fields as Array<{ key: string; type: string }>).map(
+            (f) => {
+              const val = d.applicantInformation.find((appInfo) =>
+                appInfo.values ? appInfo.values[f.key] : '',
+              );
 
-            return {
-              ...f,
-              value: val ? val.values[f.key] : '',
-            };
-          }),
+              return {
+                ...f,
+                value: val
+                  ? val.values[f.key]
+                  : f.type === 'combo' || f.type === 'checkbox'
+                    ? []
+                    : '',
+              };
+            },
+          ),
         };
       });
 

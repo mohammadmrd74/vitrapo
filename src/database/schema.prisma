@@ -38,6 +38,7 @@ model applicant {
   passportIssueDate         DateTime?                   @db.Timestamp(0)
   address                   String?                     @db.Text
   gender                    applicant_gender?
+  isConfirmed               Boolean?                    @default(false)
   createdAt                 DateTime                    @default(now()) @db.Timestamp(0)
   updatedAt                 DateTime?                   @db.Timestamp(0)
   users                     users                       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicant_FK")
@@ -325,6 +326,7 @@ model users {
   installmentMessages              installmentMessages[]
   ticketMasseges                   ticketMasseges[]
   tickets                          tickets[]
+  userNotification_NN              userNotification_NN[]
   roles                            roles?                             @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_FK")
 
   @@index([roleId], map: "users_FK")
@@ -375,6 +377,32 @@ model changepasswords {
   users     users     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "changepasswords_FK")
 
   @@index([userId], map: "changepasswords_FK")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model notification {
+  id                  Int                   @id @default(autoincrement())
+  title               String?               @db.VarChar(100)
+  text                String?               @db.VarChar(300)
+  createdAt           DateTime              @default(now()) @db.Timestamp(0)
+  updatedAt           DateTime?             @db.Timestamp(0)
+  isIndividual        Boolean?              @default(true)
+  userNotification_NN userNotification_NN[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model userNotification_NN {
+  id             Int          @id @default(autoincrement())
+  userId         Int
+  notificationId Int
+  isRead         Boolean?     @default(false)
+  createdAt      DateTime     @default(now()) @db.Timestamp(0)
+  updatedAt      DateTime?    @db.Timestamp(0)
+  users          users        @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "userNotification_NN_FK")
+  notification   notification @relation(fields: [notificationId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "userNotification_NN_FK_1")
+
+  @@unique([userId, notificationId], map: "userNotification_NN_UN")
+  @@index([notificationId], map: "userNotification_NN_FK_1")
 }
 
 enum permissions_method {
