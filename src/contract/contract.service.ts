@@ -14,6 +14,7 @@ import {
   CreateContractInstallmentFileDto,
   CreateInstallmentMessageDto,
 } from './dto/createContractInstallment.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ContractService {
@@ -127,6 +128,16 @@ export class ContractService {
     user: vtUser,
   ) {
     try {
+      //get online currencis
+      const currenciesRes = await fetch('https://call2.tgju.org/ajax.json');
+      const currencies = await currenciesRes.json();
+      const dollarConvert = currencies.current.price_dollar_rl.p
+        ? parseInt(currencies.current.price_dollar_rl.p.replace(/,/g, ''), 10)
+        : -1;
+      const euroConvnert = currencies.current.price_eur.p
+        ? parseInt(currencies.current.price_eur.p.replace(/,/g, ''), 10)
+        : -1;
+
       const installments = await this.prismaService.installments.findMany({
         where: {
           applicantId: applicantId,
@@ -137,6 +148,7 @@ export class ContractService {
           },
         },
       });
+
       if (!installments.length) {
         throw new HttpException(
           `applicant not confirmed`,
@@ -144,7 +156,24 @@ export class ContractService {
         );
       }
 
-      return installments;
+      return installments.map((ins) => {
+        let convert = 1;
+        switch (ins.priceCurrency) {
+          case 'USD':
+            convert = dollarConvert;
+            break;
+          case 'EUR':
+            convert = euroConvnert;
+            break;
+          default:
+            convert = -1;
+            break;
+        }
+        return {
+          ...ins,
+          convertedPrice: new Prisma.Decimal(ins.price).mul(convert).div(10),
+        };
+      });
     } catch (error) {
       console.log(error);
 

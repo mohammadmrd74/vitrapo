@@ -405,6 +405,15 @@ model userNotification_NN {
   @@index([notificationId], map: "userNotification_NN_FK_1")
 }
 
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model currenies {
+  id        Int       @id @default(autoincrement())
+  currency  String    @db.Char(3)
+  convert   Int?
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime? @db.Timestamp(0)
+}
+
 enum permissions_method {
   GET
   POST
