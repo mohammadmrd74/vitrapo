@@ -12,6 +12,7 @@ export enum selectedUser {
   approved = 'approved',
   rejected = 'rejected',
   waiting = 'waiting',
+  expertWaiting = 'expertWaiting',
 }
 
 export class CreateDocumentDto {

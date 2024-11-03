@@ -13,6 +13,7 @@ import {
 } from './dto/applicant.dto';
 import { vtUser } from 'src/auth/authentication.guard';
 import { dbError } from 'src/common/dbError';
+import { selectedUser } from 'src/document/dto/createDocument.dto';
 
 function keyExistsInArray(array, obj: object) {
   // Get the keys from the second object
@@ -192,7 +193,7 @@ export class ApplicantService {
     }
   }
 
-  async getApplicantList(take, skip) {
+  async getApplicantList(take: number, skip: number) {
     try {
       const applicants = await this.prismaService.applicant.findMany({
         include: {
@@ -202,12 +203,29 @@ export class ApplicantService {
               countryTranslation: true,
             },
           },
+          applicantContractDocument: {
+            select: {
+              status: true,
+            },
+          },
         },
         take: take,
         skip: skip,
       });
 
-      return applicants;
+      return applicants.map((app) => {
+        const appStatus = app.applicantContractDocument.find(
+          (status) => status.status === selectedUser.waiting,
+        );
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { applicantContractDocument, ...newapp } = app;
+
+        return {
+          ...newapp,
+          hasMessage: appStatus ? true : false,
+        };
+      });
     } catch (error) {
       throw new NotFoundException();
     }

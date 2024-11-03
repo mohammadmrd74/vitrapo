@@ -450,4 +450,5 @@ enum applicantContractDocument_status {
   approved
   rejected
   waiting
+  expertWaiting
 }

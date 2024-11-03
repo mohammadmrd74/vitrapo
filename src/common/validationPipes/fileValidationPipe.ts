@@ -29,7 +29,7 @@ export class FilesValidationPipe implements PipeTransform {
       });
 
       const fileTypeValidator = new FileTypeValidator({
-        fileType: 'image/jpeg|image/png',
+        fileType: 'image/jpeg|image/png|image/jpg',
       });
 
       maxSizeValidator.isValid(file);
