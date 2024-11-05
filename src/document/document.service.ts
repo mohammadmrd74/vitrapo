@@ -67,9 +67,13 @@ export class DocumentService {
         where: {
           id: document.documentId,
         },
-        data: {
-          status: document.status,
-        },
+        data: document.isMain
+          ? {
+              status: document.status,
+            }
+          : {
+              translateStatus: document.status,
+            },
       });
     } catch (error) {
       console.log(error);
@@ -129,12 +133,15 @@ export class DocumentService {
                 docTitle: true,
                 docDescription: true,
                 hasTranslate: true,
+                id: true,
                 applicantContractDocument: {
                   select: {
                     id: true,
                     original: true,
                     translate: true,
                     wantTranslate: true,
+                    status: true,
+                    translateStatus: true,
                   },
                 },
               },

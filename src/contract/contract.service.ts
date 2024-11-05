@@ -186,16 +186,30 @@ export class ContractService {
     files: Array<Express.Multer.File>,
   ) {
     try {
+      const alreadyUploadedFiles =
+        await this.prismaService.installments.findFirst({
+          where: {
+            id: parseInt(installment.installmentId, 10),
+          },
+          select: {
+            documentFile: true,
+          },
+        });
+
       const uploaded_files = await this.minioClientService.uploadMany(
         files,
         'installments',
       );
+
+      const updatedData = Array.isArray(alreadyUploadedFiles.documentFile)
+        ? [...alreadyUploadedFiles.documentFile, ...uploaded_files] // Concatenate arrays
+        : uploaded_files;
       const updatedInstallment = await this.prismaService.installments.update({
         where: {
           id: parseInt(installment.installmentId, 10),
         },
         data: {
-          documentFile: uploaded_files,
+          documentFile: updatedData,
         },
       });
 

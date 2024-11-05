@@ -40,7 +40,7 @@ export class MinioClientService {
     }
 
     return {
-      url: `${this.configService.get<string>('MINIO_ENDPOINT')}:${this.configService.get<string>('MINIO_PORT')}/${baseBucket}/${filename}`,
+      url: `http://${this.configService.get<string>('MINIO_ENDPOINT')}:${this.configService.get<string>('MINIO_PORT')}/${baseBucket}/${filename}`,
     };
   }
 
@@ -71,7 +71,7 @@ export class MinioClientService {
         throw new HttpException('Error uploading file', HttpStatus.BAD_REQUEST);
       }
       urls.push(
-        `${this.configService.get<string>('MINIO_ENDPOINT')}:${this.configService.get<string>('MINIO_PORT')}/${baseBucket}/${filename}`,
+        `http://${this.configService.get<string>('MINIO_ENDPOINT')}:${this.configService.get<string>('MINIO_PORT')}/${baseBucket}/${filename}`,
       );
     }
 

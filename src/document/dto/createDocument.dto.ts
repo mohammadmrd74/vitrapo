@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsArray,
   IsEnum,
+  IsBoolean,
 } from 'class-validator';
 
 export enum selectedUser {
@@ -37,6 +38,9 @@ export class CreateDocumentDto {
 export class ChangeStatusDocumentDto {
   @IsNumber()
   documentId: number;
+
+  @IsBoolean()
+  isMain: number;
 
   @IsEnum(selectedUser)
   status: selectedUser;

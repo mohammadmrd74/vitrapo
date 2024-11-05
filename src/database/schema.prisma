@@ -55,19 +55,20 @@ model applicant {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model applicantContractDocument {
-  id                               Int                                @id @default(autoincrement())
+  id                               Int                                        @id @default(autoincrement())
   applicantId                      Int
   contractId                       Int
   documentId                       Int
-  original                         String?                            @db.VarChar(100)
-  translate                        String?                            @db.VarChar(100)
-  wantTranslate                    Int?                               @default(0) @db.TinyInt
-  status                           applicantContractDocument_status?  @default(empty)
-  createdAt                        DateTime                           @default(now()) @db.Timestamp(0)
-  updatedAt                        DateTime?                          @db.Timestamp(0)
-  applicant                        applicant                          @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK")
-  contracts                        contracts                          @relation(fields: [contractId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK_1")
-  documents                        documents                          @relation(fields: [documentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK_2")
+  original                         String?                                    @db.VarChar(100)
+  translate                        String?                                    @db.VarChar(100)
+  wantTranslate                    Int?                                       @default(0) @db.TinyInt
+  status                           applicantContractDocument_status?          @default(empty)
+  createdAt                        DateTime                                   @default(now()) @db.Timestamp(0)
+  updatedAt                        DateTime?                                  @db.Timestamp(0)
+  translateStatus                  applicantContractDocument_translateStatus? @default(empty)
+  applicant                        applicant                                  @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK")
+  contracts                        contracts                                  @relation(fields: [contractId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK_1")
+  documents                        documents                                  @relation(fields: [documentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK_2")
   applicantContractDocumentMessage applicantContractDocumentMessage[]
 
   @@unique([applicantId, contractId, documentId], map: "applicantContractDocument_UN")
@@ -193,9 +194,9 @@ model installments {
   deadLine            Int?                  @db.TinyInt
   documentFile        Json?
   isMain              Int?                  @default(1) @db.TinyInt
-  status              Int?                  @default(0) @db.TinyInt
   createdAt           DateTime              @default(now()) @db.Timestamp(0)
   updatedAt           DateTime?             @db.Timestamp(0)
+  status              installments_status?  @default(empty)
   installmentMessages installmentMessages[]
   contracts           contracts             @relation(fields: [contractId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installments_FK")
   applicant           applicant             @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installments_FK_1")
@@ -446,6 +447,22 @@ enum applicant_visaType {
 }
 
 enum applicantContractDocument_status {
+  empty
+  approved
+  rejected
+  waiting
+  expertWaiting
+}
+
+enum applicantContractDocument_translateStatus {
+  empty
+  approved
+  rejected
+  waiting
+  expertWaiting
+}
+
+enum installments_status {
   empty
   approved
   rejected
