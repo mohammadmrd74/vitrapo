@@ -53,7 +53,12 @@ export class DocumentController {
     @Query('contractId', ParseIntPipe) contractId: number,
     @Request() req: Request & { user: vtUser },
   ) {
-    return this.documentService.getDocument(applicantId, contractId, req.user);
+    return this.documentService.getDocument(
+      applicantId,
+      contractId,
+      true,
+      req.user,
+    );
   }
 
   @Get('/list')
@@ -66,8 +71,8 @@ export class DocumentController {
     return this.documentService.getDocument(
       applicantId,
       contractId,
-      req.user,
       true,
+      req.user,
     );
   }
 
@@ -105,9 +110,11 @@ export class DocumentController {
   getContractApplicantMessage(
     @Query('applicantContractDocumentId', ParseIntPipe)
     applicantContractDocumentId: number,
+    @Request() req: Request & { user: vtUser },
   ) {
     return this.documentService.getContractApplicantMessage(
       applicantContractDocumentId,
+      req.user,
     );
   }
 }

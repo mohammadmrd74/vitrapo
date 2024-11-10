@@ -10,6 +10,7 @@ import {
   CreateApplicantDataGroupDto,
   CreateApplicantDto,
   CreateApplicantInformationDto,
+  CreateAssignExpertDto,
 } from './dto/applicant.dto';
 import { vtUser } from 'src/auth/authentication.guard';
 import { dbError } from 'src/common/dbError';
@@ -130,6 +131,26 @@ export class ApplicantService {
       throw new NotFoundException();
     }
   }
+
+  async assignExpert(assignExpertBody: CreateAssignExpertDto) {
+    try {
+      const applicantExperts =
+        await this.prismaService.applicantExpert.createMany({
+          data: assignExpertBody.expertIds.map((ex) => ({
+            applicantId: assignExpertBody.applicantId,
+            expertId: ex,
+          })),
+          skipDuplicates: true,
+        });
+
+      return applicantExperts;
+    } catch (error) {
+      dbError(error);
+
+      throw new NotFoundException();
+    }
+  }
+
   async insertApplicantDataGroup(
     applicantDataGroup: CreateApplicantDataGroupDto,
   ) {
@@ -193,7 +214,7 @@ export class ApplicantService {
     }
   }
 
-  async getApplicantList(take: number, skip: number) {
+  async getApplicantList(take: number, skip: number, user: vtUser) {
     try {
       const applicants = await this.prismaService.applicant.findMany({
         include: {
@@ -206,6 +227,13 @@ export class ApplicantService {
           applicantContractDocument: {
             select: {
               status: true,
+            },
+          },
+        },
+        where: {
+          applicantExpert: {
+            some: {
+              expertId: user.sub,
             },
           },
         },
@@ -236,7 +264,7 @@ export class ApplicantService {
       const dataGroup = await this.prismaService.applicantDataGroup.findMany({
         where: {
           applicantInformation: {
-            every: {
+            some: {
               applicantId: applicantId,
             },
           },

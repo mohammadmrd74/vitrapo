@@ -104,8 +104,8 @@ export class DocumentService {
   async getDocument(
     applicantId: number,
     contractId: number,
-    user: vtUser,
     canAccess: boolean = false,
+    user: vtUser,
   ) {
     try {
       const applicantDocuments =
@@ -119,9 +119,6 @@ export class DocumentService {
                     : {
                         applicantId: applicantId,
                         contractId: contractId,
-                        applicant: {
-                          userId: user.sub,
-                        },
                       },
                 },
               },
@@ -142,12 +139,44 @@ export class DocumentService {
                     wantTranslate: true,
                     status: true,
                     translateStatus: true,
+                    lastReadByUsers: {
+                      select: {
+                        userId: true,
+                        lastReadId: true,
+                      },
+                    },
+                    applicantContractDocumentMessage: {
+                      select: {
+                        id: true,
+                      },
+                    },
                   },
                 },
               },
             },
           },
         });
+
+      applicantDocuments.forEach((ad) => {
+        ad.documents.forEach((doc) => {
+          const lastId = doc.applicantContractDocument[0].lastReadByUsers.find(
+            (ls) => ls.userId === user.sub,
+          );
+          let unread_count = 0;
+          if (lastId) {
+            const unread_array: Array<{ id: number }> =
+              doc.applicantContractDocument[0].applicantContractDocumentMessage.filter(
+                (ff) => ff.id > lastId.lastReadId,
+              );
+            unread_count = unread_array.length;
+          } else {
+            unread_count =
+              doc.applicantContractDocument[0].applicantContractDocumentMessage
+                .length;
+          }
+          doc.applicantContractDocument[0]['unread_count'] = unread_count;
+        });
+      });
 
       return applicantDocuments;
     } catch (error) {
@@ -245,7 +274,10 @@ export class DocumentService {
     }
   }
 
-  async getContractApplicantMessage(applicantContractDocumentId: number) {
+  async getContractApplicantMessage(
+    applicantContractDocumentId: number,
+    user: vtUser,
+  ) {
     try {
       const applicantDocumentMessage =
         await this.prismaService.applicantContractDocumentMessage.findMany({
@@ -267,6 +299,25 @@ export class DocumentService {
             },
           },
         });
+
+      if (applicantDocumentMessage.length > 0) {
+        await this.prismaService.lastReadByUsers.upsert({
+          update: {
+            lastReadId: applicantDocumentMessage.slice(-1)[0].id,
+          },
+          where: {
+            userId_ACDId: {
+              userId: user.sub,
+              ACDId: applicantContractDocumentId,
+            },
+          },
+          create: {
+            ACDId: applicantContractDocumentId,
+            userId: user.sub,
+            lastReadId: applicantDocumentMessage.slice(-1)[0].id,
+          },
+        });
+      }
 
       return applicantDocumentMessage;
     } catch (error) {

@@ -44,6 +44,7 @@ model applicant {
   users                     users                       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicant_FK")
   countries                 countries?                  @relation(fields: [destCountryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicant_FK_1")
   applicantContractDocument applicantContractDocument[]
+  applicantExpert           applicantExpert[]
   applicantInformation      applicantInformation[]
   contracts                 contracts[]
   installments              installments[]
@@ -70,6 +71,7 @@ model applicantContractDocument {
   contracts                        contracts                                  @relation(fields: [contractId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK_1")
   documents                        documents                                  @relation(fields: [documentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantContractDocument_FK_2")
   applicantContractDocumentMessage applicantContractDocumentMessage[]
+  lastReadByUsers                  lastReadByUsers[]
 
   @@unique([applicantId, contractId, documentId], map: "applicantContractDocument_UN")
   @@index([contractId], map: "applicantContractDocument_FK_1")
@@ -200,6 +202,7 @@ model installments {
   installmentMessages installmentMessages[]
   contracts           contracts             @relation(fields: [contractId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installments_FK")
   applicant           applicant             @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "installments_FK_1")
+  lastReadByUsers     lastReadByUsers[]
 
   @@unique([contractId, applicantId, installmentNumber, isMain], map: "installments_UN")
   @@index([applicantId], map: "installments_FK_1")
@@ -290,16 +293,17 @@ model ticketMasseges {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model tickets {
-  id             Int              @id @default(autoincrement())
-  userId         Int?
-  categoryId     Int
-  title          String?          @db.VarChar(100)
-  status         tickets_status   @default(created)
-  createdAt      DateTime         @default(now()) @db.Timestamp(0)
-  updatedAt      DateTime?        @db.Timestamp(0)
-  ticketMasseges ticketMasseges[]
-  ticketCategory ticketCategory   @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tickets_FK")
-  users          users?           @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tickets_FK_1")
+  id              Int               @id @default(autoincrement())
+  userId          Int?
+  categoryId      Int
+  title           String?           @db.VarChar(100)
+  status          tickets_status    @default(created)
+  createdAt       DateTime          @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime?         @db.Timestamp(0)
+  lastReadByUsers lastReadByUsers[]
+  ticketMasseges  ticketMasseges[]
+  ticketCategory  ticketCategory    @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tickets_FK")
+  users           users?            @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tickets_FK_1")
 
   @@index([categoryId], map: "tickets_FK")
   @@index([userId], map: "tickets_FK_1")
@@ -323,6 +327,7 @@ model users {
   updatedAt                        DateTime?                          @db.Timestamp(0)
   applicant                        applicant[]
   applicantContractDocumentMessage applicantContractDocumentMessage[]
+  applicantExpert                  applicantExpert[]
   changepasswords                  changepasswords[]
   installmentMessages              installmentMessages[]
   ticketMasseges                   ticketMasseges[]
@@ -413,6 +418,39 @@ model currenies {
   convert   Int?
   createdAt DateTime  @default(now()) @db.Timestamp(0)
   updatedAt DateTime? @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model lastReadByUsers {
+  id                        Int                        @id @default(autoincrement())
+  userId                    Int?
+  ACDId                     Int?
+  installmentId             Int?
+  ticketId                  Int?
+  lastReadId                Int?
+  createdAt                 DateTime                   @default(now()) @db.Timestamp(0)
+  updatedAt                 DateTime?                  @db.Timestamp(0)
+  applicantContractDocument applicantContractDocument? @relation(fields: [ACDId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "lastReadByUsers_FK")
+  installments              installments?              @relation(fields: [installmentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "lastReadByUsers_FK_1")
+  tickets                   tickets?                   @relation(fields: [ticketId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "lastReadByUsers_FK_2")
+
+  @@unique([userId, ACDId], map: "lastReadByUsers_UN")
+  @@unique([userId, installmentId], map: "lastReadByUsers_UN_1")
+  @@unique([userId, ticketId], map: "lastReadByUsers_UN_2")
+  @@index([ACDId], map: "lastReadByUsers_FK")
+  @@index([installmentId], map: "lastReadByUsers_FK_1")
+  @@index([ticketId], map: "lastReadByUsers_FK_2")
+}
+
+model applicantExpert {
+  id          Int        @id @default(autoincrement())
+  applicantId Int?
+  expertId    Int?
+  applicant   applicant? @relation(fields: [applicantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantExpert_FK")
+  users       users?     @relation(fields: [expertId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicantExpert_FK_1")
+
+  @@unique([applicantId, expertId], map: "applicantExpert_UN")
+  @@index([expertId], map: "applicantExpert_FK_1")
 }
 
 enum permissions_method {

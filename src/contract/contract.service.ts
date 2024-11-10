@@ -22,13 +22,12 @@ export class ContractService {
     private minioClientService: MinioClientService,
     private prismaService: PrismaService,
   ) {}
-  async getContract(applicantId: number, user: vtUser) {
+  async getContract(applicantId: number) {
     try {
       const contract = await this.prismaService.contracts.findMany({
         where: {
           applicantId: applicantId,
           applicant: {
-            userId: user.sub,
             isConfirmed: true,
           },
         },
@@ -48,11 +47,18 @@ export class ContractService {
     }
   }
 
-  async getContractList(applicantId: number) {
+  async getContractList(applicantId: number, user: vtUser) {
     try {
       const contract = await this.prismaService.contracts.findMany({
         where: {
           applicantId: applicantId,
+          applicant: {
+            applicantExpert: {
+              some: {
+                expertId: user.sub,
+              },
+            },
+          },
         },
       });
 

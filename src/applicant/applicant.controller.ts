@@ -14,6 +14,7 @@ import {
   CreateApplicantDataGroupDto,
   CreateApplicantDto,
   CreateApplicantInformationDto,
+  CreateAssignExpertDto,
 } from './dto/applicant.dto';
 // import { applicant } from '@prisma/client';
 import { ApplicantService } from './applicant.service';
@@ -41,8 +42,9 @@ export class ApplicantController {
   getApplicantList(
     @Query('take', new DefaultValuePipe(20), ParseIntPipe) take: number,
     @Query('skip', new DefaultValuePipe(0), ParseIntPipe) skip: number,
+    @Request() req: Request & { user: vtUser },
   ) {
-    return this.applicantService.getApplicantList(take, skip);
+    return this.applicantService.getApplicantList(take, skip, req.user);
   }
 
   @Get('/datagroup')
@@ -77,5 +79,11 @@ export class ApplicantController {
       ...applicantinformation,
       contractId: -1,
     });
+  }
+
+  @Post('/assignexpert')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  assignExpert(@Body() assignExpertBody: CreateAssignExpertDto) {
+    return this.applicantService.assignExpert(assignExpertBody);
   }
 }

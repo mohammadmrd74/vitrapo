@@ -108,6 +108,15 @@ export class CreateApplicantInformationDto {
   values: object;
 }
 
+export class CreateAssignExpertDto {
+  @IsNumber()
+  applicantId: number;
+
+  @IsArray()
+  @IsNumber({}, { each: true })
+  expertIds: Array<number>;
+}
+
 export class CreateApplicantDataGroupDto {
   @IsString()
   title: string;

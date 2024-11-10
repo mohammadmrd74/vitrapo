@@ -58,17 +58,17 @@ export class ContractController {
 
   @UseGuards(AuthenticationGuard)
   @Get()
-  getContract(
-    @Query('applicantId', ParseIntPipe) applicantId: number,
-    @Request() req: Request & { user: vtUser },
-  ) {
-    return this.contractService.getContract(applicantId, req.user);
+  getContract(@Query('applicantId', ParseIntPipe) applicantId: number) {
+    return this.contractService.getContract(applicantId);
   }
 
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   @Get('/list')
-  getContractList(@Query('applicantId', ParseIntPipe) applicantId: number) {
-    return this.contractService.getContractList(applicantId);
+  getContractList(
+    @Query('applicantId', ParseIntPipe) applicantId: number,
+    @Request() req: Request & { user: vtUser },
+  ) {
+    return this.contractService.getContractList(applicantId, req.user);
   }
 
   @UseGuards(AuthenticationGuard, AuthorizationGuard)

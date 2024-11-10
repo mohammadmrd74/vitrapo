@@ -115,6 +115,12 @@ export class TicketService {
           },
           include: {
             ticketCategory: true,
+            users: {
+              select: {
+                name: true,
+                family: true,
+              },
+            },
           },
           take: take,
           skip: skip,
