@@ -163,6 +163,9 @@ export class ContractService {
       }
 
       return installments.map((ins) => {
+        ins.price = new Prisma.Decimal(ins.price).add(
+          new Prisma.Decimal(ins.price).mul(0.04),
+        );
         let convert = 1;
         switch (ins.priceCurrency) {
           case 'USD':

@@ -1,4 +1,4 @@
-import { MaxLength, IsString, IsNotEmpty } from 'class-validator';
+import { MaxLength, IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateTicketDto {
   @IsString()
@@ -13,6 +13,10 @@ export class CreateTicketDto {
   @MaxLength(500)
   @IsNotEmpty()
   message: string;
+
+  @IsString()
+  @IsOptional()
+  expertIds: string;
 }
 
 export class CreateTicketMessageDto {

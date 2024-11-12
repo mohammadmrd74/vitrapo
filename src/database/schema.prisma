@@ -301,6 +301,7 @@ model tickets {
   createdAt       DateTime          @default(now()) @db.Timestamp(0)
   updatedAt       DateTime?         @db.Timestamp(0)
   lastReadByUsers lastReadByUsers[]
+  ticketExpert    ticketExpert[]
   ticketMasseges  ticketMasseges[]
   ticketCategory  ticketCategory    @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tickets_FK")
   users           users?            @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tickets_FK_1")
@@ -330,6 +331,7 @@ model users {
   applicantExpert                  applicantExpert[]
   changepasswords                  changepasswords[]
   installmentMessages              installmentMessages[]
+  ticketExpert                     ticketExpert[]
   ticketMasseges                   ticketMasseges[]
   tickets                          tickets[]
   userNotification_NN              userNotification_NN[]
@@ -451,6 +453,17 @@ model applicantExpert {
 
   @@unique([applicantId, expertId], map: "applicantExpert_UN")
   @@index([expertId], map: "applicantExpert_FK_1")
+}
+
+model ticketExpert {
+  id       Int      @id @default(autoincrement())
+  ticketId Int?
+  expertId Int?
+  tickets  tickets? @relation(fields: [ticketId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ticketExpert_FK")
+  users    users?   @relation(fields: [expertId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ticketExpert_FK_1")
+
+  @@unique([ticketId, expertId], map: "ticketExpert_UN")
+  @@index([expertId], map: "ticketExpert_FK_1")
 }
 
 enum permissions_method {

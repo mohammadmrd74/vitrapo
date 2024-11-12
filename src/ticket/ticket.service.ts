@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
-
 import { dbError } from 'src/common/dbError';
 import { vtUser } from 'src/auth/authentication.guard';
 import { MinioClientService } from 'src/minio-client/minio-client.service';
@@ -9,6 +8,7 @@ import {
   CreateTicketDto,
   CreateTicketMessageDto,
 } from './dto/createTicket.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TicketService {
@@ -46,24 +46,38 @@ export class TicketService {
     bucket: string,
   ) {
     try {
+      console.log(JSON.parse(createTicket.expertIds));
+
       const uploaded_files = await this.minioClientService.uploadMany(
         files,
         bucket,
       );
 
-      const createdTickets = await this.prismaService.tickets.create({
-        data: {
-          userId: user.sub,
-          categoryId: parseInt(createTicket.categoryId, 10),
-          title: createTicket.title,
-          ticketMasseges: {
-            create: {
-              userId: user.sub,
-              message: createTicket.message,
-              files: uploaded_files,
-            },
+      const data: Prisma.ticketsUncheckedCreateInput = {
+        userId: user.sub,
+        categoryId: parseInt(createTicket.categoryId, 10),
+        title: createTicket.title,
+        ticketMasseges: {
+          create: {
+            userId: user.sub,
+            message: createTicket.message,
+            files: uploaded_files,
           },
         },
+      };
+
+      if (createTicket.expertIds && JSON.parse(createTicket.expertIds)) {
+        data.ticketExpert = {
+          createMany: {
+            data: JSON.parse(createTicket.expertIds).map((ex) => ({
+              expertId: ex,
+            })),
+          },
+        };
+      }
+
+      const createdTickets = await this.prismaService.tickets.create({
+        data: data,
       });
 
       return createdTickets;
@@ -111,7 +125,31 @@ export class TicketService {
       const [tickets, count] = await this.prismaService.$transaction([
         this.prismaService.tickets.findMany({
           where: {
-            userId: user.sub,
+            OR: [
+              {
+                userId: user.sub,
+              },
+              {
+                users: {
+                  applicant: {
+                    some: {
+                      applicantExpert: {
+                        some: {
+                          expertId: user.sub,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              {
+                ticketExpert: {
+                  some: {
+                    expertId: user.sub,
+                  },
+                },
+              },
+            ],
           },
           include: {
             ticketCategory: true,
@@ -127,7 +165,31 @@ export class TicketService {
         }),
         this.prismaService.tickets.count({
           where: {
-            userId: user.sub,
+            OR: [
+              {
+                userId: user.sub,
+              },
+              {
+                users: {
+                  applicant: {
+                    some: {
+                      applicantExpert: {
+                        some: {
+                          expertId: user.sub,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              {
+                ticketExpert: {
+                  some: {
+                    expertId: user.sub,
+                  },
+                },
+              },
+            ],
           },
         }),
       ]);
