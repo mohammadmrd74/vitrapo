@@ -88,4 +88,10 @@ export class UserController {
   getUsersList() {
     return this.userService.getUserList();
   }
+
+  @UseGuards(AuthenticationGuard)
+  @Get('permissions')
+  getUserPersmissions(@Request() req: Request & { user: vtUser }) {
+    return this.userService.getUserPersmissions(req.user);
+  }
 }

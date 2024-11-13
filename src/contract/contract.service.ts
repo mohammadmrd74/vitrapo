@@ -132,6 +132,7 @@ export class ContractService {
     applicantId: number,
     contractId: number,
     user: vtUser,
+    isUser: boolean,
   ) {
     try {
       //get online currencis
@@ -148,10 +149,14 @@ export class ContractService {
         where: {
           applicantId: applicantId,
           contractId: contractId,
-          applicant: {
-            userId: user.sub,
-            isConfirmed: true,
-          },
+          applicant: isUser
+            ? {
+                userId: user.sub,
+                isConfirmed: true,
+              }
+            : {
+                isConfirmed: true,
+              },
         },
       });
 

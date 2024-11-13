@@ -318,4 +318,18 @@ export class UserService {
 
     return userWithoutPassword;
   }
+
+  async getUserPersmissions(user: vtUser) {
+    const users = await this.prismaService.rolePermission_NN.findMany({
+      select: {
+        permissions: true,
+      },
+      where: {
+        roleId: user.roleId,
+      },
+    });
+    const userWithoutPassword = this.exclude(users, ['password']);
+
+    return userWithoutPassword;
+  }
 }

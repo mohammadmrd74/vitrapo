@@ -106,6 +106,22 @@ export class ContractController {
       applicantId,
       contractId,
       req.user,
+      true,
+    );
+  }
+
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Get('/installment/list')
+  getContractInstallmentList(
+    @Query('applicantId', ParseIntPipe) applicantId: number,
+    @Query('contractId', ParseIntPipe) contractId: number,
+    @Request() req: Request & { user: vtUser },
+  ) {
+    return this.contractService.getContractInstallments(
+      applicantId,
+      contractId,
+      req.user,
+      false,
     );
   }
 
