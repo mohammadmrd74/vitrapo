@@ -46,6 +46,12 @@ export class DocumentController {
     return this.documentService.addDocumentForApplicant(body);
   }
 
+  @Get('/all')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  getAllDocuments() {
+    return this.documentService.getAllDocuments();
+  }
+
   @Get('/')
   @UseGuards(AuthenticationGuard)
   getDocument(

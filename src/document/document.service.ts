@@ -101,6 +101,14 @@ export class DocumentService {
     }
   }
 
+  async getAllDocuments() {
+    return this.prismaService.documents.findMany({
+      include: {
+        doumentGroups: true,
+      },
+    });
+  }
+
   async getDocument(
     applicantId: number,
     contractId: number,
