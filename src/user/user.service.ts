@@ -312,12 +312,12 @@ export class UserService {
     }
   }
 
-  async getUserList() {
-    const users = await this.prismaService.users.findMany();
-    const userWithoutPassword = this.exclude(users, ['password']);
+  // async getUserList() {
+  //   const users = await this.prismaService.users.findMany();
+  //   const userWithoutPassword = this.exclude(users, ['password']);
 
-    return userWithoutPassword;
-  }
+  //   return userWithoutPassword;
+  // }
 
   async getUserPersmissions(user: vtUser) {
     const users = await this.prismaService.rolePermission_NN.findMany({

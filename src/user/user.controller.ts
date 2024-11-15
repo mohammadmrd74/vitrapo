@@ -83,11 +83,11 @@ export class UserController {
     return req.user;
   }
 
-  @UseGuards(AuthenticationGuard, AuthorizationGuard)
-  @Get('list')
-  getUsersList() {
-    return this.userService.getUserList();
-  }
+  // @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  // @Get('list')
+  // getUsersList() {
+  //   return this.userService.getUserList();
+  // }
 
   @UseGuards(AuthenticationGuard)
   @Get('permissions')

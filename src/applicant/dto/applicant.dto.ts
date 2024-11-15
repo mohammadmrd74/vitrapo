@@ -8,6 +8,7 @@ import {
   IsObject,
   IsArray,
   IsOptional,
+  IsBoolean,
 } from 'class-validator';
 
 enum visaTypes {
@@ -90,6 +91,13 @@ export class CreateApplicantDto {
 export class ConfirmApplicantDto {
   @IsNumber()
   applicantId: number;
+}
+export class AdminConfirmApplicantDto {
+  @IsNumber()
+  applicantId: number;
+
+  @IsBoolean()
+  confirm: boolean;
 }
 
 export class CreateApplicantInformationDto {

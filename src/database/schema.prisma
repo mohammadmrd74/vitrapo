@@ -39,6 +39,7 @@ model applicant {
   address                   String?                     @db.Text
   gender                    applicant_gender?
   isConfirmed               Boolean?                    @default(false)
+  isAdminConfirmed          Boolean?                    @default(false)
   createdAt                 DateTime                    @default(now()) @db.Timestamp(0)
   updatedAt                 DateTime?                   @db.Timestamp(0)
   users                     users                       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicant_FK")

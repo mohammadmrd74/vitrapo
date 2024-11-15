@@ -10,6 +10,7 @@ import {
   DefaultValuePipe,
 } from '@nestjs/common';
 import {
+  AdminConfirmApplicantDto,
   ConfirmApplicantDto,
   CreateApplicantDataGroupDto,
   CreateApplicantDto,
@@ -60,6 +61,15 @@ export class ApplicantController {
     @Body() applicant: ConfirmApplicantDto,
   ) {
     return this.applicantService.confirmData(req.user, applicant);
+  }
+
+  @Post('/adminconfirm')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  adminConfirmData(
+    @Request() req: Request & { user: vtUser },
+    @Body() applicant: AdminConfirmApplicantDto,
+  ) {
+    return this.applicantService.adminConfirmData(req.user, applicant);
   }
 
   @Post('/datagroup')

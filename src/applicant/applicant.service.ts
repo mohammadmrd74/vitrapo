@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import {
+  AdminConfirmApplicantDto,
   ConfirmApplicantDto,
   CreateApplicantDataGroupDto,
   CreateApplicantDto,
@@ -132,6 +133,25 @@ export class ApplicantService {
     }
   }
 
+  async adminConfirmData(user: vtUser, applicant: AdminConfirmApplicantDto) {
+    try {
+      const confirmed = await this.prismaService.applicant.update({
+        where: {
+          id: applicant.applicantId,
+        },
+        data: {
+          isAdminConfirmed: applicant.confirm,
+        },
+      });
+
+      return confirmed;
+    } catch (error) {
+      dbError(error);
+
+      throw new NotFoundException();
+    }
+  }
+
   async assignExpert(assignExpertBody: CreateAssignExpertDto) {
     try {
       const applicantExperts =
@@ -230,13 +250,16 @@ export class ApplicantService {
             },
           },
         },
-        where: {
-          applicantExpert: {
-            some: {
-              expertId: user.sub,
-            },
-          },
-        },
+        where:
+          user.roleId === 3
+            ? {}
+            : {
+                applicantExpert: {
+                  some: {
+                    expertId: user.sub,
+                  },
+                },
+              },
         take: take,
         skip: skip,
       });
