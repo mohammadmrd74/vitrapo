@@ -23,12 +23,19 @@ export class AdminController {
     return this.adminService.getCountries();
   }
 
+  @Get('/roles')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  getRoles() {
+    return this.adminService.getRoles();
+  }
+
   @Get('/users')
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   getUsers(
     @Query('take', new DefaultValuePipe(20), ParseIntPipe) take: number,
     @Query('skip', new DefaultValuePipe(0), ParseIntPipe) skip: number,
+    @Query('roleId', new DefaultValuePipe(-1), ParseIntPipe) roleId: number,
   ) {
-    return this.adminService.getUsers(take, skip);
+    return this.adminService.getUsers(take, skip, roleId);
   }
 }

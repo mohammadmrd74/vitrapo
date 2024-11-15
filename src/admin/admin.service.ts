@@ -13,16 +13,38 @@ export class AdminService {
     });
   }
 
-  async getUsers(take: number, skip: number) {
+  async getRoles() {
+    return this.prismaService.roles.findMany({
+      select: {
+        id: true,
+        title: true,
+      },
+    });
+  }
+
+  async getUsers(take: number, skip: number, roleId: number) {
     const [users, count] = await this.prismaService.$transaction([
       this.prismaService.users.findMany({
         include: {
           roles: true,
         },
+        where:
+          roleId > 0
+            ? {
+                roleId,
+              }
+            : {},
         take,
         skip,
       }),
-      this.prismaService.users.count(),
+      this.prismaService.users.count({
+        where:
+          roleId > 0
+            ? {
+                roleId,
+              }
+            : {},
+      }),
     ]);
 
     return {
