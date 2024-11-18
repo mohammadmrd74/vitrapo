@@ -96,4 +96,10 @@ export class ApplicantController {
   assignExpert(@Body() assignExpertBody: CreateAssignExpertDto) {
     return this.applicantService.assignExpert(assignExpertBody);
   }
+
+  @Post('/assignexpert/delete')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  deleteExpert(@Body() assignExpertBody: CreateAssignExpertDto) {
+    return this.applicantService.deleteExpert(assignExpertBody);
+  }
 }

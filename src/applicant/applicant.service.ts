@@ -1,4 +1,5 @@
 import {
+  Body,
   HttpException,
   HttpStatus,
   Injectable,
@@ -161,6 +162,26 @@ export class ApplicantService {
             expertId: ex,
           })),
           skipDuplicates: true,
+        });
+
+      return applicantExperts;
+    } catch (error) {
+      dbError(error);
+
+      throw new NotFoundException();
+    }
+  }
+
+  async deleteExpert(assignExpertBody: CreateAssignExpertDto) {
+    try {
+      const applicantExperts =
+        await this.prismaService.applicantExpert.deleteMany({
+          where: {
+            applicantId: assignExpertBody.applicantId,
+            expertId: {
+              in: assignExpertBody.expertIds,
+            },
+          },
         });
 
       return applicantExperts;

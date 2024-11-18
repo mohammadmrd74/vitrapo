@@ -46,6 +46,12 @@ export class DocumentController {
     return this.documentService.addDocumentForApplicant(body);
   }
 
+  @Post('/applicant/delete')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  deleteDocumentForApplicant(@Body() body: CreateApplicantDocumentDto) {
+    return this.documentService.deleteDocumentForApplicant(body);
+  }
+
   @Get('/all')
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   getAllDocuments() {

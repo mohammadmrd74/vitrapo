@@ -102,6 +102,26 @@ export class DocumentService {
     }
   }
 
+  async deleteDocumentForApplicant(body: CreateApplicantDocumentDto) {
+    try {
+      return await this.prismaService.applicantContractDocument.deleteMany({
+        where: {
+          applicantId: body.applicantId,
+          contractId: body.contractId,
+          documentId: {
+            in: body.documentIds,
+          },
+        },
+      });
+    } catch (error) {
+      console.log(error);
+
+      dbError(error);
+
+      throw error;
+    }
+  }
+
   async getAllDocuments() {
     return this.prismaService.documents.findMany({
       include: {
