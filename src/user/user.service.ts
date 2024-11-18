@@ -35,7 +35,6 @@ export class UserService {
     file: Express.Multer.File,
     bucket: string,
   ) {
-    console.log(file);
 
     let imageUrl: string = '';
     if (file) imageUrl = await this.uploadSingle(file, bucket);

@@ -26,6 +26,7 @@ export class AdminService {
     const [users, count] = await this.prismaService.$transaction([
       this.prismaService.users.findMany({
         select: {
+          id: true,
           email: true,
           name: true,
           family: true,
