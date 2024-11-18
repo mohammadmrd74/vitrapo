@@ -91,6 +91,7 @@ export class DocumentService {
       }));
       return await this.prismaService.applicantContractDocument.createMany({
         data: insertObjects,
+        skipDuplicates: true,
       });
     } catch (error) {
       console.log(error);
@@ -158,6 +159,14 @@ export class DocumentService {
                         id: true,
                       },
                     },
+                  },
+                },
+              },
+              where: {
+                applicantContractDocument: {
+                  some: {
+                    applicantId: applicantId,
+                    contractId: contractId,
                   },
                 },
               },

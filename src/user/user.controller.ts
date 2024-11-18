@@ -41,6 +41,7 @@ export class UserController {
           }),
           new FileTypeValidator({ fileType: 'image/jpeg|image/png' }),
         ],
+        fileIsRequired: false,
       }),
     )
     file: Express.Multer.File,

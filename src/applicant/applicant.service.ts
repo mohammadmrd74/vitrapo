@@ -249,6 +249,17 @@ export class ApplicantService {
               status: true,
             },
           },
+          applicantExpert: {
+            select: {
+              expertId: true,
+              users: {
+                select: {
+                  name: true,
+                  family: true,
+                },
+              },
+            },
+          },
         },
         where:
           user.roleId === 3

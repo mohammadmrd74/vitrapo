@@ -35,7 +35,10 @@ export class UserService {
     file: Express.Multer.File,
     bucket: string,
   ) {
-    const imageUrl = await this.uploadSingle(file, bucket);
+    console.log(file);
+
+    let imageUrl: string = '';
+    if (file) imageUrl = await this.uploadSingle(file, bucket);
     const hash = await bcrypt.hash(createUser.password, 10);
     try {
       const user = await this.prismaService.users.create({

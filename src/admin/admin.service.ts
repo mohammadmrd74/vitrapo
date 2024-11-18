@@ -25,7 +25,14 @@ export class AdminService {
   async getUsers(take: number, skip: number, roleId: number) {
     const [users, count] = await this.prismaService.$transaction([
       this.prismaService.users.findMany({
-        include: {
+        select: {
+          email: true,
+          name: true,
+          family: true,
+          profilePicture: true,
+          roleId: true,
+          status: true,
+          username: true,
           roles: true,
         },
         where:
