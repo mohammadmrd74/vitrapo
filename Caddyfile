@@ -1,4 +1,4 @@
-http://speakasactor.com {
+http://crm.vitrapo.com {
     handle /api/* {
         reverse_proxy localhost:4000
     }
