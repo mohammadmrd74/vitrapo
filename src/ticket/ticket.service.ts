@@ -46,7 +46,6 @@ export class TicketService {
     bucket: string,
   ) {
     try {
-      console.log(JSON.parse(createTicket.expertIds));
 
       const uploaded_files = await this.minioClientService.uploadMany(
         files,
@@ -210,7 +209,7 @@ export class TicketService {
     try {
       const replies = await this.prismaService.ticketMasseges.findMany({
         where: {
-          userId: user.sub,
+          // userId: user.sub,
           ticketId,
         },
       });
