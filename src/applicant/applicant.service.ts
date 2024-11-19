@@ -212,11 +212,12 @@ export class ApplicantService {
     }
   }
 
-  async addApplicant(applicant: CreateApplicantDto) {
+  async addApplicant(applicant: CreateApplicantDto, user: vtUser) {
     try {
       const createdApplicant = await this.prismaService.applicant.create({
         data: {
           ...applicant,
+          sellerId: user.sub,
           passportExpireDate: new Date(applicant.passportExpireDate),
           passportIssueDate: new Date(applicant.passportIssueDate),
         },
@@ -240,7 +241,20 @@ export class ApplicantService {
           userId: user.sub,
         },
         include: {
-          users: true,
+          users: {
+            select: {
+              id: true,
+              name: true,
+              family: true,
+            },
+          },
+          seller: {
+            select: {
+              id: true,
+              name: true,
+              family: true,
+            },
+          },
           countries: {
             include: {
               countryTranslation: true,

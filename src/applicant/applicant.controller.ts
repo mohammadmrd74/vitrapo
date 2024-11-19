@@ -28,8 +28,11 @@ export class ApplicantController {
 
   @Post('/')
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
-  addApplicant(@Body() applicant: CreateApplicantDto) {
-    return this.applicantService.addApplicant(applicant);
+  addApplicant(
+    @Body() applicant: CreateApplicantDto,
+    @Request() req: Request & { user: vtUser },
+  ) {
+    return this.applicantService.addApplicant(applicant, req.user);
   }
 
   @Get('/')

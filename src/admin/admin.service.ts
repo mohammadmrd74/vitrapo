@@ -35,6 +35,22 @@ export class AdminService {
           status: true,
           username: true,
           roles: true,
+          applicantExpert: {
+            include: {
+              applicant: true,
+            },
+          },
+          applicant_applicant_sellerIdTousers: {
+            include: {
+              users: {
+                select: {
+                  id: true,
+                  name: true,
+                  family: true,
+                },
+              },
+            },
+          },
         },
         where:
           roleId > 0

@@ -20,39 +20,42 @@ model ACDMessage {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model applicant {
-  id                        Int                         @id @default(autoincrement())
-  userId                    Int
-  nationalId                String?                     @db.Char(10)
-  destCountryId             Int?
-  visaType                  applicant_visaType?
-  fieldOfStudy              String?                     @db.VarChar(100)
-  superVisorMobile          String?                     @db.VarChar(11)
-  studyLanguage             String?                     @db.Char(2)
-  fileNumber                String?                     @db.VarChar(100)
-  grade                     String?                     @db.VarChar(50)
-  telephone                 String?                     @db.VarChar(15)
-  state                     String?                     @db.VarChar(20)
-  city                      String?                     @db.VarChar(20)
-  passportNumber            String?                     @db.VarChar(15)
-  passportExpireDate        DateTime?                   @db.Timestamp(0)
-  passportIssueDate         DateTime?                   @db.Timestamp(0)
-  address                   String?                     @db.Text
-  gender                    applicant_gender?
-  isConfirmed               Boolean?                    @default(false)
-  isAdminConfirmed          Boolean?                    @default(false)
-  createdAt                 DateTime                    @default(now()) @db.Timestamp(0)
-  updatedAt                 DateTime?                   @db.Timestamp(0)
-  users                     users                       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicant_FK")
-  countries                 countries?                  @relation(fields: [destCountryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicant_FK_1")
-  applicantContractDocument applicantContractDocument[]
-  applicantExpert           applicantExpert[]
-  applicantInformation      applicantInformation[]
-  contracts                 contracts[]
-  installments              installments[]
+  id                              Int                         @id @default(autoincrement())
+  userId                          Int
+  nationalId                      String?                     @db.Char(10)
+  destCountryId                   Int?
+  visaType                        applicant_visaType?
+  fieldOfStudy                    String?                     @db.VarChar(100)
+  superVisorMobile                String?                     @db.VarChar(11)
+  studyLanguage                   String?                     @db.Char(2)
+  fileNumber                      String?                     @db.VarChar(100)
+  grade                           String?                     @db.VarChar(50)
+  telephone                       String?                     @db.VarChar(15)
+  state                           String?                     @db.VarChar(20)
+  city                            String?                     @db.VarChar(20)
+  passportNumber                  String?                     @db.VarChar(15)
+  passportExpireDate              DateTime?                   @db.Timestamp(0)
+  passportIssueDate               DateTime?                   @db.Timestamp(0)
+  address                         String?                     @db.Text
+  gender                          applicant_gender?
+  isConfirmed                     Boolean?                    @default(false)
+  isAdminConfirmed                Boolean?                    @default(false)
+  sellerId                        Int?
+  createdAt                       DateTime                    @default(now()) @db.Timestamp(0)
+  updatedAt                       DateTime?                   @db.Timestamp(0)
+  users                           users                       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicant_FK")
+  countries                       countries?                  @relation(fields: [destCountryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicant_FK_1")
+  seller                          users?                      @relation("applicant_sellerIdTousers", fields: [sellerId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "applicant_FK_2")
+  applicantContractDocument       applicantContractDocument[]
+  applicantExpert                 applicantExpert[]
+  applicantInformation            applicantInformation[]
+  contracts                       contracts[]
+  installments                    installments[]
 
   @@unique([userId, destCountryId, visaType], map: "applicant_UN")
   @@index([userId], map: "applicant_FK")
   @@index([destCountryId], map: "applicant_FK_1")
+  @@index([sellerId], map: "applicant_FK_2")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -313,30 +316,31 @@ model tickets {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model users {
-  id                               Int                                @id @default(autoincrement())
-  username                         String                             @unique(map: "users_UN_username") @db.VarChar(100)
-  password                         String                             @db.VarChar(100)
-  smscode                          String?                            @db.Char(5)
-  mobile                           String?                            @unique(map: "users_UN") @db.VarChar(11)
-  email                            String?                            @unique(map: "users_email_UN") @db.VarChar(50)
-  roleId                           Int?                               @default(1)
-  name                             String?                            @db.VarChar(100)
-  family                           String?                            @db.VarChar(100)
-  profilePicture                   String?                            @db.VarChar(100)
-  status                           Int?                               @default(0) @db.TinyInt
-  smsTimeLeft                      DateTime?                          @db.Timestamp(0)
-  createdAt                        DateTime                           @default(now()) @db.Timestamp(0)
-  updatedAt                        DateTime?                          @db.Timestamp(0)
-  applicant                        applicant[]
-  applicantContractDocumentMessage applicantContractDocumentMessage[]
-  applicantExpert                  applicantExpert[]
-  changepasswords                  changepasswords[]
-  installmentMessages              installmentMessages[]
-  ticketExpert                     ticketExpert[]
-  ticketMasseges                   ticketMasseges[]
-  tickets                          tickets[]
-  userNotification_NN              userNotification_NN[]
-  roles                            roles?                             @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_FK")
+  id                                  Int                                @id @default(autoincrement())
+  username                            String                             @unique(map: "users_UN_username") @db.VarChar(100)
+  password                            String                             @db.VarChar(100)
+  smscode                             String?                            @db.Char(5)
+  mobile                              String?                            @unique(map: "users_UN") @db.VarChar(11)
+  email                               String?                            @unique(map: "users_email_UN") @db.VarChar(50)
+  roleId                              Int?                               @default(1)
+  name                                String?                            @db.VarChar(100)
+  family                              String?                            @db.VarChar(100)
+  profilePicture                      String?                            @db.VarChar(100)
+  status                              Int?                               @default(0) @db.TinyInt
+  smsTimeLeft                         DateTime?                          @db.Timestamp(0)
+  createdAt                           DateTime                           @default(now()) @db.Timestamp(0)
+  updatedAt                           DateTime?                          @db.Timestamp(0)
+  applicant                           applicant[]
+  applicant_applicant_sellerIdTousers applicant[]                        @relation("applicant_sellerIdTousers")
+  applicantContractDocumentMessage    applicantContractDocumentMessage[]
+  applicantExpert                     applicantExpert[]
+  changepasswords                     changepasswords[]
+  installmentMessages                 installmentMessages[]
+  ticketExpert                        ticketExpert[]
+  ticketMasseges                      ticketMasseges[]
+  tickets                             tickets[]
+  userNotification_NN                 userNotification_NN[]
+  roles                               roles?                             @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "users_FK")
 
   @@index([roleId], map: "users_FK")
 }
