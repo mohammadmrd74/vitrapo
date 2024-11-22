@@ -28,6 +28,7 @@ import { AuthorizationGuard } from 'src/auth/authorization.guard';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
   @Post('/register')
   @UseInterceptors(FileInterceptor('profilePicture'))
   register(
