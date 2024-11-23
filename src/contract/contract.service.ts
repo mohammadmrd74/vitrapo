@@ -284,6 +284,15 @@ export class ContractService {
     try {
       const installmentsMessages =
         await this.prismaService.installmentMessages.findMany({
+          include: {
+            users: {
+              select: {
+                name: true,
+                family: true,
+                id: true,
+              },
+            },
+          },
           where: {
             installmentId: installmentId,
           },
