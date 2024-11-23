@@ -32,7 +32,11 @@ export class MinioClientService {
     const fileName: string = `${filename}`;
     const fileBuffer = file.buffer;
     try {
-      await this.client.putObject(baseBucket, 'files/' + fileName, fileBuffer);
+      await this.client.putObject(
+        'files',
+        baseBucket + '/' + fileName,
+        fileBuffer,
+      );
     } catch (error) {
       console.log(error);
 
@@ -65,8 +69,8 @@ export class MinioClientService {
       const fileBuffer = file.buffer;
       try {
         await this.client.putObject(
-          baseBucket,
-          'files/' + fileName,
+          'files',
+          baseBucket + '/' + fileName,
           fileBuffer,
         );
       } catch (error) {
