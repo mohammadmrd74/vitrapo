@@ -42,6 +42,18 @@ export class AdminService {
           },
           applicant_applicant_sellerIdTousers: {
             include: {
+              applicantExpert: {
+                select: {
+                  expertId: true,
+                  users: {
+                    select: {
+                      name: true,
+                      family: true,
+                    },
+                  },
+                  applicant: true,
+                },
+              },
               users: {
                 select: {
                   id: true,
