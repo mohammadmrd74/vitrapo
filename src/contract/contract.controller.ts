@@ -141,8 +141,7 @@ export class ContractController {
   @Get('/installment/message')
   getInstallmentMessage(
     @Query('installmentId', ParseIntPipe) installmentId: number,
-    @Request() req: Request & { user: vtUser },
   ) {
-    return this.contractService.getInstallmentMessage(installmentId, req.user);
+    return this.contractService.getInstallmentMessage(installmentId);
   }
 }

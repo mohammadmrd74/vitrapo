@@ -258,17 +258,12 @@ export class ContractService {
     }
   }
 
-  async getInstallmentMessage(installmentId: number, user: vtUser) {
+  async getInstallmentMessage(installmentId: number) {
     try {
       const installmentsMessages =
         await this.prismaService.installmentMessages.findMany({
           where: {
             installmentId: installmentId,
-            installments: {
-              applicant: {
-                userId: user.sub,
-              },
-            },
           },
         });
 

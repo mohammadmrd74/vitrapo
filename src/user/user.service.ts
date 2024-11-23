@@ -19,6 +19,7 @@ import { v4 as uuid } from 'uuid';
 type selectedUser = {
   id: number;
   password?: string;
+  mobile?: string;
   smsTimeLeft: Date;
 };
 
@@ -35,7 +36,6 @@ export class UserService {
     file: Express.Multer.File,
     bucket: string,
   ) {
-
     let imageUrl: string = '';
     if (file) imageUrl = await this.uploadSingle(file, bucket);
     const hash = await bcrypt.hash(createUser.password, 10);
@@ -122,6 +122,7 @@ export class UserService {
       const foundUser = await this.prismaService.users.findFirst({
         select: {
           id: true,
+          mobile: true,
           smsTimeLeft: true,
         },
         where: {
@@ -170,6 +171,7 @@ export class UserService {
       select: {
         id: true,
         password: true,
+        mobile: true,
         smsTimeLeft: true,
       },
       where: {
@@ -221,6 +223,29 @@ export class UserService {
   async updateUserWithSMScode(foundUser: selectedUser) {
     const code = Math.floor(Math.random() * 90000) + 10000;
     const date = new Date();
+    // const sms = await fetch('https://api.sms.ir/v1/send/verify', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     ACCEPT: 'application/json',
+    //     'X-API-KEY':
+    //       'nlMHzg7fiO66SpwNHxhvLiecQNJSHo5cEKJSkcNZSfEAqkXtLrFejlJzjRBR3084',
+    //   },
+    //   body: JSON.stringify({
+    //     mobile: foundUser.mobile,
+    //     templateId: 795700,
+    //     parameters: [
+    //       {
+    //         name: 'Code',
+    //         value: '12345',
+    //       },
+    //     ],
+    //   }),
+    // });
+
+    // const ss = await sms.json();
+    // console.log(ss);
+
     const updateUser = await this.prismaService.users.update({
       where: {
         id: foundUser.id,
