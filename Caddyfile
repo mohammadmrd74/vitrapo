@@ -4,7 +4,6 @@ http://crm.vitrapo.com {
     }
 
     handle /files/* {
-        rewrite * {http.matchers.path_regexp.files.1}
         reverse_proxy localhost:9000
     }
 
