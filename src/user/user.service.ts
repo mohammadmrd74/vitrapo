@@ -43,6 +43,7 @@ export class UserService {
       const user = await this.prismaService.users.create({
         data: {
           ...createUser,
+          roleId: parseInt(createUser.roleId, 10) || 1,
           email: createUser.email || null,
           password: hash,
           profilePicture: imageUrl,

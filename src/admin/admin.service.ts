@@ -35,6 +35,7 @@ export class AdminService {
           status: true,
           username: true,
           roles: true,
+          createdAt: true,
           applicantExpert: {
             include: {
               applicant: true,

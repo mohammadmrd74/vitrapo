@@ -4,6 +4,7 @@ import {
   Matches,
   IsOptional,
   MinLength,
+  IsNumber,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -20,6 +21,10 @@ export class CreateUserDto {
   @MaxLength(50)
   @IsOptional()
   username: string;
+
+  @IsString()
+  @IsOptional()
+  roleId: string;
 
   @IsString()
   @MaxLength(20)
