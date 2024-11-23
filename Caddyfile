@@ -2,6 +2,12 @@ https://crm.vitrapo.com {
     handle /api/* {
         reverse_proxy localhost:4000
     }
+
+    handle /files/* {
+        rewrite * {http.matchers.path_regexp.files.1}
+        reverse_proxy localhost:9000
+    }
+
     handle {
         reverse_proxy localhost:3000
     }
