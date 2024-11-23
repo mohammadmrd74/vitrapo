@@ -271,6 +271,12 @@ export class ApplicantService {
 
   async getApplicantList(take: number, skip: number, user: vtUser) {
     try {
+      console.log({
+        some: {
+          expertId: user.sub,
+        },
+      });
+
       const applicants = await this.prismaService.applicant.findMany({
         include: {
           users: true,
@@ -300,11 +306,18 @@ export class ApplicantService {
           user.roleId === 3
             ? {}
             : {
-                applicantExpert: {
-                  some: {
-                    expertId: user.sub,
+                OR: [
+                  {
+                    applicantExpert: {
+                      some: {
+                        expertId: user.sub,
+                      },
+                    },
                   },
-                },
+                  {
+                    sellerId: user.sub,
+                  },
+                ],
               },
         take: take,
         skip: skip,
