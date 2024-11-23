@@ -13,6 +13,7 @@ import {
   CreateContractInstallmentDto,
   CreateContractInstallmentFileDto,
   CreateInstallmentMessageDto,
+  installmentStatusDto,
 } from './dto/createContractInstallment.dto';
 import { Prisma } from '@prisma/client';
 
@@ -168,6 +169,7 @@ export class ContractService {
       }
 
       return installments.map((ins) => {
+        const mainP = ins.price;
         ins.price = new Prisma.Decimal(ins.price).add(
           new Prisma.Decimal(ins.price).mul(0.04),
         );
@@ -185,6 +187,7 @@ export class ContractService {
         }
         return {
           ...ins,
+          mainP: mainP,
           convertedPrice: new Prisma.Decimal(ins.price).mul(convert).div(10),
         };
       });
@@ -248,6 +251,25 @@ export class ContractService {
             userId: user.sub,
           },
         });
+
+      return createdContract;
+    } catch (error) {
+      console.log(error);
+      dbError(error);
+
+      throw error;
+    }
+  }
+  async changeStatusInstallment(body: installmentStatusDto) {
+    try {
+      const createdContract = await this.prismaService.installments.update({
+        data: {
+          status: body.status,
+        },
+        where: {
+          id: body.installmentId,
+        },
+      });
 
       return createdContract;
     } catch (error) {

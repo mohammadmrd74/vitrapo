@@ -5,8 +5,16 @@ import {
   Length,
   IsDateString,
   Max,
+  IsEnum,
 } from 'class-validator';
 
+export enum insStatus {
+  empty = 'empty',
+  approved = 'approved',
+  rejected = 'rejected',
+  waiting = 'waiting',
+  expertWaiting = 'expertWaiting',
+}
 export class CreateContractInstallmentDto {
   @IsNumber()
   contractId: number;
@@ -36,6 +44,13 @@ export class CreateContractInstallmentDto {
 export class CreateContractInstallmentFileDto {
   @IsString()
   installmentId: string;
+}
+export class installmentStatusDto {
+  @IsNumber()
+  installmentId: number;
+
+  @IsEnum(insStatus)
+  status: insStatus;
 }
 
 export class CreateInstallmentMessageDto {

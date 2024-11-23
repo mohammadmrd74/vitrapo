@@ -24,6 +24,7 @@ import {
   CreateContractInstallmentDto,
   CreateContractInstallmentFileDto,
   CreateInstallmentMessageDto,
+  installmentStatusDto,
 } from './dto/createContractInstallment.dto';
 import { FilesValidationPipe } from 'src/common/validationPipes/fileValidationPipe';
 
@@ -135,6 +136,12 @@ export class ContractController {
       installmentMessage,
       req.user,
     );
+  }
+
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Put('/installment/changestatus')
+  changeStatusInstallment(@Body() installmentStatus: installmentStatusDto) {
+    return this.contractService.changeStatusInstallment(installmentStatus);
   }
 
   @UseGuards(AuthenticationGuard)
