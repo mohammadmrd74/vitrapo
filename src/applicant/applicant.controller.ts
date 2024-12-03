@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Query,
   DefaultValuePipe,
+  Delete,
 } from '@nestjs/common';
 import {
   AdminConfirmApplicantDto,
@@ -16,6 +17,7 @@ import {
   CreateApplicantDto,
   CreateApplicantInformationDto,
   CreateAssignExpertDto,
+  CreateMultiApplicantInformationDto,
 } from './dto/applicant.dto';
 // import { applicant } from '@prisma/client';
 import { ApplicantService } from './applicant.service';
@@ -81,6 +83,28 @@ export class ApplicantController {
     @Body() applicantDataGroup: CreateApplicantDataGroupDto,
   ) {
     return this.applicantService.insertApplicantDataGroup(applicantDataGroup);
+  }
+
+  @Post('/information/multi')
+  @UseGuards(AuthenticationGuard)
+  insertMultiApplicantInformation(
+    @Body() applicantinformation: CreateMultiApplicantInformationDto,
+  ) {
+    return this.applicantService.insertApplicationMultiInformation({
+      ...applicantinformation,
+      contractId: -1,
+    });
+  }
+
+  @Delete('/information/multi')
+  @UseGuards(AuthenticationGuard)
+  deleteMultiApplicantInformation(
+    @Body() applicantinformation: CreateMultiApplicantInformationDto,
+  ) {
+    return this.applicantService.deleteApplicationMultiInformation({
+      ...applicantinformation,
+      contractId: -1,
+    });
   }
 
   @Post('/information')

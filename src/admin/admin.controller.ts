@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Query,
   DefaultValuePipe,
+  Delete,
 } from '@nestjs/common';
 import { AuthenticationGuard, vtUser } from 'src/auth/authentication.guard';
 import { AuthorizationGuard } from 'src/auth/authorization.guard';
@@ -27,6 +28,18 @@ export class AdminController {
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   getRoles() {
     return this.adminService.getRoles();
+  }
+
+  @Get('/datagroup')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  getAllDG() {
+    return this.adminService.getAllDG();
+  }
+
+  @Delete('/datagroup')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  deletDG(@Query('id', ParseIntPipe) id: number) {
+    return this.adminService.deleteDG(id);
   }
 
   @Get('/users')

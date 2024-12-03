@@ -13,6 +13,7 @@ import {
   CreateApplicantDto,
   CreateApplicantInformationDto,
   CreateAssignExpertDto,
+  CreateMultiApplicantInformationDto,
 } from './dto/applicant.dto';
 import { vtUser } from 'src/auth/authentication.guard';
 import { dbError } from 'src/common/dbError';
@@ -36,6 +37,50 @@ function keyExistsInArray(array, obj: object) {
 @Injectable()
 export class ApplicantService {
   constructor(private prismaService: PrismaService) {}
+
+  async insertApplicationMultiInformation(
+    applicantInformation: CreateMultiApplicantInformationDto,
+  ) {
+    try {
+      const createApplicantInformation =
+        await this.prismaService.applicantInformation.createMany({
+          data: applicantInformation.dataGroupId.map((id) => ({
+            applicantId: applicantInformation.applicantId,
+            contractId: -1,
+            dataGroupId: id,
+          })),
+          skipDuplicates: true,
+        });
+
+      return createApplicantInformation;
+    } catch (error) {
+      console.log(error);
+      dbError(error);
+      throw new NotFoundException();
+    }
+  }
+  async deleteApplicationMultiInformation(
+    applicantInformation: CreateMultiApplicantInformationDto,
+  ) {
+    try {
+      const deleteApplicantInformation =
+        await this.prismaService.applicantInformation.deleteMany({
+          where: {
+            applicantId: applicantInformation.applicantId,
+            contractId: -1,
+            dataGroupId: {
+              in: applicantInformation.dataGroupId,
+            },
+          },
+        });
+
+      return deleteApplicantInformation;
+    } catch (error) {
+      console.log(error);
+      dbError(error);
+      throw new NotFoundException();
+    }
+  }
   async insertApplicantInformation(
     applicantInformation: CreateApplicantInformationDto,
   ) {
@@ -246,6 +291,7 @@ export class ApplicantService {
               id: true,
               name: true,
               family: true,
+              roleId: true,
             },
           },
           seller: {

@@ -9,6 +9,7 @@ import {
   IsArray,
   IsOptional,
   IsBoolean,
+  isArray,
 } from 'class-validator';
 
 enum visaTypes {
@@ -110,6 +111,22 @@ export class CreateApplicantInformationDto {
 
   @IsNumber()
   dataGroupId: number;
+
+  @IsObject()
+  @IsOptional()
+  values: object;
+}
+export class CreateMultiApplicantInformationDto {
+  @IsNumber()
+  applicantId: number;
+
+  @IsNumber()
+  @IsOptional()
+  contractId: number;
+
+  @IsArray()
+  @IsNumber({}, { each: true })
+  dataGroupId: Array<number>;
 
   @IsObject()
   @IsOptional()

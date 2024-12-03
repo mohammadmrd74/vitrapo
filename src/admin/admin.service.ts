@@ -22,6 +22,18 @@ export class AdminService {
     });
   }
 
+  async getAllDG() {
+    return this.prismaService.applicantDataGroup.findMany();
+  }
+
+  async deleteDG(id: number) {
+    return this.prismaService.applicantDataGroup.delete({
+      where: {
+        id,
+      },
+    });
+  }
+
   async getUsers(take: number, skip: number, roleId: number) {
     const [users, count] = await this.prismaService.$transaction([
       this.prismaService.users.findMany({
