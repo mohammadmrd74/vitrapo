@@ -4,7 +4,6 @@ import {
   Matches,
   IsOptional,
   MinLength,
-  IsNumber,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -28,7 +27,7 @@ export class CreateUserDto {
 
   @IsString()
   @MaxLength(20)
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[a-z]).*$/, {
     message: 'password too weak',
   })
   password: string;
@@ -50,7 +49,7 @@ export class LoginUserDto {
 
   @IsString()
   @MaxLength(20)
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[a-z]).*$/, {
     message: 'password too weak',
   })
   password: string;
@@ -70,7 +69,7 @@ export class ApproveUserDto {
 export class ChangePasswordUserDto {
   @IsString()
   @MaxLength(20)
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[a-z]).*$/, {
     message: 'password too weak',
   })
   password: string;

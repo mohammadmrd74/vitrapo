@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { vtUser } from 'src/auth/authentication.guard';
 import { PrismaService } from 'src/database/prisma.service';
 
 @Injectable()
@@ -34,7 +35,7 @@ export class AdminService {
     });
   }
 
-  async getUsers(take: number, skip: number, roleId: number) {
+  async getUsers(take: number, skip: number, roleId: number, user: vtUser) {
     const [users, count] = await this.prismaService.$transaction([
       this.prismaService.users.findMany({
         select: {
@@ -78,11 +79,20 @@ export class AdminService {
           },
         },
         where:
-          roleId > 0
-            ? {
-                roleId,
-              }
-            : {},
+          user.roleId === 3
+            ? roleId > 0
+              ? {
+                  roleId,
+                }
+              : {}
+            : roleId > 0
+              ? {
+                  roleId,
+                  masterId: user.sub,
+                }
+              : {
+                  masterId: user.sub,
+                },
         take,
         skip,
       }),

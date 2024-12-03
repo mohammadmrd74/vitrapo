@@ -35,6 +35,7 @@ export class UserService {
     createUser: CreateUserDto,
     file: Express.Multer.File,
     bucket: string,
+    masterUser: vtUser,
   ) {
     let imageUrl: string = '';
     if (file) imageUrl = await this.uploadSingle(file, bucket);
@@ -47,6 +48,7 @@ export class UserService {
           email: createUser.email || null,
           password: hash,
           profilePicture: imageUrl,
+          masterId: masterUser.sub,
         },
       });
 
@@ -180,11 +182,14 @@ export class UserService {
       },
     });
 
+    const hash = await bcrypt.hash(loginUser.password, 10);
+    console.log(hash);
     //check user exists
     if (!foundUser)
       throw new HttpException('Username not found', HttpStatus.NOT_FOUND);
 
     //check password correct
+    
     const isMatch = await bcrypt.compare(
       loginUser.password,
       foundUser.password,
@@ -271,6 +276,7 @@ export class UserService {
         roleId: true,
         username: true,
         status: true,
+        profilePicture: true,
       },
       where: {
         username: approveUser.username,
@@ -296,6 +302,7 @@ export class UserService {
       mobile: foundUser.mobile,
       email: foundUser.email,
       roleId: foundUser.roleId,
+      profilePicture: foundUser.profilePicture,
     };
 
     return {

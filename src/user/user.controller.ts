@@ -46,8 +46,9 @@ export class UserController {
       }),
     )
     file: Express.Multer.File,
+    @Request() req: Request & { user: vtUser },
   ) {
-    return this.userService.registerUser(createUser, file, 'users');
+    return this.userService.registerUser(createUser, file, 'users', req.user);
   }
 
   @Post('/login')

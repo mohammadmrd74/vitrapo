@@ -48,7 +48,8 @@ export class AdminController {
     @Query('take', new DefaultValuePipe(20), ParseIntPipe) take: number,
     @Query('skip', new DefaultValuePipe(0), ParseIntPipe) skip: number,
     @Query('roleId', new DefaultValuePipe(-1), ParseIntPipe) roleId: number,
+    @Request() req: Request & { user: vtUser },
   ) {
-    return this.adminService.getUsers(take, skip, roleId);
+    return this.adminService.getUsers(take, skip, roleId, req.user);
   }
 }
