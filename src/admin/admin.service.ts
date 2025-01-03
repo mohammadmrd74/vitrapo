@@ -34,6 +34,16 @@ export class AdminService {
       },
     });
   }
+  async deletUser(id: number) {
+    return this.prismaService.users.update({
+      data: {
+        status: 0,
+      },
+      where: {
+        id,
+      },
+    });
+  }
 
   async getUsers(take: number, skip: number, roleId: number, user: vtUser) {
     const [users, count] = await this.prismaService.$transaction([
@@ -111,6 +121,59 @@ export class AdminService {
       count,
       take,
       skip,
+    };
+  }
+  async getSingleUser(id: number) {
+    const [users] = await this.prismaService.$transaction([
+      this.prismaService.users.findFirst({
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          family: true,
+          profilePicture: true,
+          roleId: true,
+          status: true,
+          username: true,
+          roles: true,
+          createdAt: true,
+          applicantExpert: {
+            include: {
+              applicant: true,
+            },
+          },
+          applicant_applicant_sellerIdTousers: {
+            include: {
+              applicantExpert: {
+                select: {
+                  expertId: true,
+                  users: {
+                    select: {
+                      name: true,
+                      family: true,
+                    },
+                  },
+                  applicant: true,
+                },
+              },
+              users: {
+                select: {
+                  id: true,
+                  name: true,
+                  family: true,
+                },
+              },
+            },
+          },
+        },
+        where: {
+          id,
+        },
+      }),
+    ]);
+
+    return {
+      users,
     };
   }
 }

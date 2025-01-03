@@ -52,4 +52,15 @@ export class AdminController {
   ) {
     return this.adminService.getUsers(take, skip, roleId, req.user);
   }
+  @Get('/user')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  getSingleUser(@Query('id', ParseIntPipe) id: number) {
+    return this.adminService.getSingleUser(id);
+  }
+
+  @Post('/users/delete')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  deletUser(@Query('id', ParseIntPipe) id: number) {
+    return this.adminService.deletUser(id);
+  }
 }
