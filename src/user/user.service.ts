@@ -229,36 +229,36 @@ export class UserService {
   async updateUserWithSMScode(foundUser: selectedUser) {
     const code = Math.floor(Math.random() * 90000) + 10000;
     const date = new Date();
-    // const sms = await fetch('https://api.sms.ir/v1/send/verify', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     ACCEPT: 'application/json',
-    //     'X-API-KEY':
-    //       'nlMHzg7fiO66SpwNHxhvLiecQNJSHo5cEKJSkcNZSfEAqkXtLrFejlJzjRBR3084',
-    //   },
-    //   body: JSON.stringify({
-    //     mobile: foundUser.mobile,
-    //     templateId: 795700,
-    //     parameters: [
-    //       {
-    //         name: 'Code',
-    //         value: '12345',
-    //       },
-    //     ],
-    //   }),
-    // });
+    const sms = await fetch('https://api.sms.ir/v1/send/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ACCEPT: 'application/json',
+        'X-API-KEY':
+          'nlMHzg7fiO66SpwNHxhvLiecQNJSHo5cEKJSkcNZSfEAqkXtLrFejlJzjRBR3084',
+      },
+      body: JSON.stringify({
+        mobile: foundUser.mobile,
+        templateId: 795700,
+        parameters: [
+          {
+            name: 'NUMBER',
+            value: code.toString(),
+          },
+        ],
+      }),
+    });
 
-    // const ss = await sms.json();
-    // console.log(ss);
+    const ss = await sms.json();
+    console.log(ss);
 
     const updateUser = await this.prismaService.users.update({
       where: {
         id: foundUser.id,
       },
       data: {
-        // smscode: code.toString(),
-        smscode: '11111',
+        smscode: code.toString(),
+        // smscode: '11111',
         smsTimeLeft: date,
       },
     });
@@ -280,8 +280,8 @@ export class UserService {
       },
       where: {
         username: approveUser.username,
-        smscode: '11111',
-        // smscode: approveUser.code,
+        // smscode: '11111',
+        smscode: approveUser.code,
       },
     });
 
