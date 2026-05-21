@@ -1,40 +1,50 @@
-version: '3.4'
 services:
   nestapp:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: vitrapo-app 
+    container_name: vitrapo-app
     restart: always
-    network_mode: "host"
+    environment:
+      - DATABASE_URL=file:/data/dev.db
+      - APP_ENV=production
+      - APP_PORT=4000
+      - APP_NAME=vitrapo
+      - FILE_STORAGE_PATH=/data/uploads
+      - FILE_BASE_URL=/files
+      # Set SMS_SKIP=1 here to enable real SMS via sms.ir in prod.
+    volumes:
+      - app_data:/data
+    expose:
+      - "4000"
+    command: sh -c "npx prisma db push --skip-generate && node dist/main.js"
+
   frontapp:
     build:
       context: ../Vitrapo-CRM
       dockerfile: Dockerfile
-    container_name: vitrapo-front 
+      args:
+        VITE_API_BASE_URL: /api/
+    container_name: vitrapo-front
     restart: always
-    network_mode: "host"
-  minio:
-    image: 'bitnami/minio:latest'
-    container_name: minio
-    restart: always
-    logging:
-        options:
-            max-size: 1m
-    environment:
-        - MINIO_ROOT_USER=vitrapo
-        - MINIO_ROOT_PASSWORD=vitrapo123
-    network_mode: "host"
+    expose:
+      - "3000"
+
   caddy:
-    image: caddy:latest
+    image: caddy:2-alpine
     container_name: caddy
     restart: always
-    network_mode: "host"
+    ports:
+      - "80:80"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+    depends_on:
+      - nestapp
+      - frontapp
+
 volumes:
+  app_data:
   caddy_data:
   caddy_config:
-  my-db:

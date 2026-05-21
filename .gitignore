@@ -34,3 +34,9 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 .env
+
+# Local SQLite + uploads (per-environment, not committed)
+src/database/dev.db
+src/database/dev.db-journal
+src/database/*.bak
+/uploads

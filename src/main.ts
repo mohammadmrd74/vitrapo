@@ -1,17 +1,18 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
-// import { WinstonModule } from 'nest-winston';
 import { ConfigService } from '@nestjs/config';
-// import { instance } from './common/logger/winston.logger';
 import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
-// import * as csurf from 'csurf';
-// import { GrpcExceptionFilter } from './common/interceptor/customError';
+import * as path from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.setGlobalPrefix('api');
-  app.use(helmet());
+  const storageRoot =
+    process.env.FILE_STORAGE_PATH || path.resolve(process.cwd(), 'uploads');
+  app.useStaticAssets(storageRoot, { prefix: '/files/' });
+  app.use(helmet({ crossOriginResourcePolicy: false }));
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({

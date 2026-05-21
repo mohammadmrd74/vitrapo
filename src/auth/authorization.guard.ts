@@ -16,6 +16,12 @@ export class AuthorizationGuard implements CanActivate {
     try {
       if (!request.user.sub) throw new UnauthorizedException();
 
+      const user = await this.prismaService.users.findUnique({
+        where: { id: request.user.sub },
+        select: { roles: { select: { title: true } } },
+      });
+      if (user?.roles?.title === 'admin') return true;
+
       const rolePermissionIds =
         await this.prismaService.rolePermission_NN.findFirst({
           where: {

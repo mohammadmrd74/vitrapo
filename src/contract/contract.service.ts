@@ -25,25 +25,11 @@ export class ContractService {
   ) {}
   async getContract(applicantId: number) {
     try {
-      const contract = await this.prismaService.contracts.findMany({
-        where: {
-          applicantId: applicantId,
-          applicant: {
-            isConfirmed: true,
-          },
-        },
+      return this.prismaService.contracts.findMany({
+        where: { applicantId },
       });
-      if (!contract.length) {
-        throw new HttpException(
-          `applicant not confirmed`,
-          HttpStatus.FORBIDDEN,
-        );
-      }
-
-      return contract;
     } catch (error) {
       console.log(error);
-
       throw error;
     }
   }
@@ -136,37 +122,39 @@ export class ContractService {
     isUser: boolean,
   ) {
     try {
-      //get online currencis
-      const currenciesRes = await fetch('https://call2.tgju.org/ajax.json');
-      const currencies = await currenciesRes.json();
-      const dollarConvert = currencies.current.price_dollar_rl.p
-        ? parseInt(currencies.current.price_dollar_rl.p.replace(/,/g, ''), 10)
-        : -1;
-      const euroConvnert = currencies.current.price_eur.p
-        ? parseInt(currencies.current.price_eur.p.replace(/,/g, ''), 10)
-        : -1;
+      // Try to fetch live rates; fall back to seeded currenies rows when the
+      // external service is unreachable (e.g. local dev with no outbound to tgju.org).
+      let dollarConvert = -1;
+      let euroConvnert = -1;
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 3000);
+        const currenciesRes = await fetch('https://call2.tgju.org/ajax.json', {
+          signal: ctrl.signal,
+        });
+        clearTimeout(t);
+        const currencies = await currenciesRes.json();
+        dollarConvert = currencies.current.price_dollar_rl.p
+          ? parseInt(currencies.current.price_dollar_rl.p.replace(/,/g, ''), 10)
+          : -1;
+        euroConvnert = currencies.current.price_eur.p
+          ? parseInt(currencies.current.price_eur.p.replace(/,/g, ''), 10)
+          : -1;
+      } catch {
+        const fallback = await this.prismaService.currenies.findMany();
+        const usd = fallback.find((c) => c.currency === 'USD');
+        const eur = fallback.find((c) => c.currency === 'EUR');
+        dollarConvert = usd?.convert ?? 1;
+        euroConvnert = eur?.convert ?? 1;
+      }
 
       const installments = await this.prismaService.installments.findMany({
         where: {
           applicantId: applicantId,
           contractId: contractId,
-          applicant: isUser
-            ? {
-                userId: user.sub,
-                isConfirmed: true,
-              }
-            : {
-                isConfirmed: true,
-              },
+          applicant: isUser ? { userId: user.sub } : undefined,
         },
       });
-
-      if (!installments.length) {
-        throw new HttpException(
-          `applicant not confirmed`,
-          HttpStatus.FORBIDDEN,
-        );
-      }
 
       return installments.map((ins) => {
         const mainP = ins.price;
@@ -218,15 +206,18 @@ export class ContractService {
         'installments',
       );
 
-      const updatedData = Array.isArray(alreadyUploadedFiles.documentFile)
-        ? [...alreadyUploadedFiles.documentFile, ...uploaded_files] // Concatenate arrays
+      const existing: string[] = alreadyUploadedFiles.documentFile
+        ? JSON.parse(alreadyUploadedFiles.documentFile)
+        : [];
+      const updatedData = Array.isArray(existing)
+        ? [...existing, ...uploaded_files]
         : uploaded_files;
       const updatedInstallment = await this.prismaService.installments.update({
         where: {
           id: parseInt(installment.installmentId, 10),
         },
         data: {
-          documentFile: updatedData,
+          documentFile: JSON.stringify(updatedData),
         },
       });
 

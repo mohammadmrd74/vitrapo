@@ -1,13 +1,16 @@
-http://crm.vitrapo.com {
+:80 {
+    # Backend API
     handle /api/* {
-        reverse_proxy localhost:4000
+        reverse_proxy nestapp:4000
     }
 
+    # Uploaded files (served by Nest static handler)
     handle /files/* {
-        reverse_proxy localhost:9000
+        reverse_proxy nestapp:4000
     }
 
+    # Frontend SPA (fallback)
     handle {
-        reverse_proxy localhost:3000
+        reverse_proxy frontapp:3000
     }
 }

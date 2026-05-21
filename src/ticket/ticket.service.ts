@@ -60,7 +60,7 @@ export class TicketService {
           create: {
             userId: user.sub,
             message: createTicket.message,
-            files: uploaded_files,
+            files: JSON.stringify(uploaded_files),
           },
         },
       };
@@ -106,7 +106,7 @@ export class TicketService {
             userId: user.sub,
             ticketId: parseInt(createTicketReply.ticketId, 10),
             message: createTicketReply.message,
-            files: uploaded_files,
+            files: JSON.stringify(uploaded_files),
           },
         });
 

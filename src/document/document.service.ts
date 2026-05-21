@@ -91,7 +91,6 @@ export class DocumentService {
       }));
       return await this.prismaService.applicantContractDocument.createMany({
         data: insertObjects,
-        skipDuplicates: true,
       });
     } catch (error) {
       console.log(error);

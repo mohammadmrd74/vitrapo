@@ -82,6 +82,12 @@ export class UserController {
   }
 
   @UseGuards(AuthenticationGuard)
+  @Post('/logout')
+  logout(@Request() req: Request & { user: vtUser }) {
+    return this.userService.logoutUser(req.user);
+  }
+
+  @UseGuards(AuthenticationGuard)
   @Get('profile')
   getProfile(@Request() req: Request & { user: object }) {
     return req.user;

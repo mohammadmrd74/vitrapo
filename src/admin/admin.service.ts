@@ -24,7 +24,11 @@ export class AdminService {
   }
 
   async getAllDG() {
-    return this.prismaService.applicantDataGroup.findMany();
+    const groups = await this.prismaService.applicantDataGroup.findMany();
+    return groups.map(g => ({
+      ...g,
+      fields: g.fields ? JSON.parse(g.fields) : [],
+    }));
   }
 
   async deleteDG(id: number) {

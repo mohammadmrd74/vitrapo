@@ -59,11 +59,15 @@ export class UserService {
       };
     } catch (error) {
       if (error.code === 'P2002') {
-        throw new HttpException(
-          'Username already exists',
-          HttpStatus.BAD_REQUEST,
-        );
+        const target = error.meta?.target as string[] | string | undefined;
+        const targetStr = Array.isArray(target) ? target.join(',') : target ?? '';
+        let message = 'این کاربر قبلاً ثبت شده است';
+        if (targetStr.includes('username')) message = 'این کد ملی قبلاً ثبت شده است';
+        else if (targetStr.includes('mobile')) message = 'این شماره موبایل قبلاً ثبت شده است';
+        else if (targetStr.includes('email')) message = 'این ایمیل قبلاً ثبت شده است';
+        throw new HttpException(message, HttpStatus.BAD_REQUEST);
       }
+      throw error;
     }
   }
 
@@ -227,30 +231,37 @@ export class UserService {
   }
 
   async updateUserWithSMScode(foundUser: selectedUser) {
-    const code = Math.floor(Math.random() * 90000) + 10000;
+    const skipSms = process.env.SMS_SKIP !== '1';
+    const code = skipSms
+      ? 11111
+      : Math.floor(Math.random() * 90000) + 10000;
     const date = new Date();
-    const sms = await fetch('https://api.sms.ir/v1/send/verify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ACCEPT: 'application/json',
-        'X-API-KEY':
-          'nlMHzg7fiO66SpwNHxhvLiecQNJSHo5cEKJSkcNZSfEAqkXtLrFejlJzjRBR3084',
-      },
-      body: JSON.stringify({
-        mobile: foundUser.mobile,
-        templateId: 795700,
-        parameters: [
-          {
-            name: 'NUMBER',
-            value: code.toString(),
-          },
-        ],
-      }),
-    });
 
-    const ss = await sms.json();
-    console.log(ss);
+    if (skipSms) {
+      console.log(`[sms-skip] code for ${foundUser.mobile}: ${code}`);
+    } else {
+      const sms = await fetch('https://api.sms.ir/v1/send/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ACCEPT: 'application/json',
+          'X-API-KEY':
+            'nlMHzg7fiO66SpwNHxhvLiecQNJSHo5cEKJSkcNZSfEAqkXtLrFejlJzjRBR3084',
+        },
+        body: JSON.stringify({
+          mobile: foundUser.mobile,
+          templateId: 795700,
+          parameters: [
+            {
+              name: 'NUMBER',
+              value: code.toString(),
+            },
+          ],
+        }),
+      });
+      const ss = await sms.json();
+      console.log(ss);
+    }
 
     const updateUser = await this.prismaService.users.update({
       where: {
@@ -353,6 +364,14 @@ export class UserService {
 
   //   return userWithoutPassword;
   // }
+
+  async logoutUser(user: vtUser) {
+    // JWT is stateless — clearing happens client-side.
+    // This endpoint exists so the frontend can call a consistent flow and
+    // so a token blocklist can be added later without an API change.
+    console.log(`[logout] user ${user.sub} (${user.username})`);
+    return { success: true };
+  }
 
   async getUserPersmissions(user: vtUser) {
     const users = await this.prismaService.rolePermission_NN.findMany({

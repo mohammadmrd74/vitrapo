@@ -49,7 +49,6 @@ export class ApplicantService {
             contractId: -1,
             dataGroupId: id,
           })),
-          skipDuplicates: true,
         });
 
       return createApplicantInformation;
@@ -108,9 +107,12 @@ export class ApplicantService {
                 },
               },
               update: {
-                values: {},
+                values: JSON.stringify({}),
               },
-              create: applicantInformation,
+              create: {
+                ...applicantInformation,
+                values: JSON.stringify(applicantInformation.values ?? {}),
+              },
             });
 
           return upsertApplicantInformation;
@@ -120,7 +122,10 @@ export class ApplicantService {
           throw new NotFoundException();
         }
       }
-      if (keyExistsInArray(dbFields.fields, applicantInformation.values)) {
+      const parsedDbFields = dbFields.fields
+        ? JSON.parse(dbFields.fields)
+        : [];
+      if (keyExistsInArray(parsedDbFields, applicantInformation.values)) {
         try {
           const upsertApplicantInformation =
             await this.prismaService.applicantInformation.upsert({
@@ -132,9 +137,12 @@ export class ApplicantService {
                 },
               },
               update: {
-                values: applicantInformation.values,
+                values: JSON.stringify(applicantInformation.values),
               },
-              create: applicantInformation,
+              create: {
+                ...applicantInformation,
+                values: JSON.stringify(applicantInformation.values),
+              },
             });
 
           return upsertApplicantInformation;
@@ -206,7 +214,6 @@ export class ApplicantService {
             applicantId: assignExpertBody.applicantId,
             expertId: ex,
           })),
-          skipDuplicates: true,
         });
 
       return applicantExperts;
@@ -242,7 +249,10 @@ export class ApplicantService {
   ) {
     try {
       const createGroup = await this.prismaService.applicantDataGroup.create({
-        data: applicantDataGroup,
+        data: {
+          ...applicantDataGroup,
+          fields: JSON.stringify(applicantDataGroup.fields),
+        },
       });
 
       return {
@@ -402,26 +412,28 @@ export class ApplicantService {
         },
       });
       const rightData = dataGroup.map((d) => {
+        const parsedFields: Array<{ key: string; type: string }> = d.fields
+          ? JSON.parse(d.fields)
+          : [];
         return {
           id: d.id,
           title: d.title,
           description: d.description,
-          fields: (d.fields as Array<{ key: string; type: string }>).map(
-            (f) => {
-              const val = d.applicantInformation.find((appInfo) =>
-                appInfo.values ? appInfo.values[f.key] : '',
-              );
-
-              return {
-                ...f,
-                value: val
-                  ? val.values[f.key]
-                  : f.type === 'combo' || f.type === 'checkbox'
-                    ? []
-                    : '',
-              };
-            },
-          ),
+          fields: parsedFields.map((f) => {
+            const val = d.applicantInformation.find((appInfo) => {
+              const vals = appInfo.values ? JSON.parse(appInfo.values) : null;
+              return vals ? vals[f.key] : '';
+            });
+            const valValues = val?.values ? JSON.parse(val.values) : {};
+            return {
+              ...f,
+              value: val
+                ? valValues[f.key]
+                : f.type === 'combo' || f.type === 'checkbox'
+                  ? []
+                  : '',
+            };
+          }),
         };
       });
 
